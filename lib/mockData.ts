@@ -21,7 +21,6 @@ export type LeaderboardRow = {
 
 export const navLinks = [
   { label: "Home", href: "#home" },
-  { label: "Fixtures", href: "#fixtures" },
   { label: "Live", href: "#fixtures" },
   { label: "Leaderboard", href: "#leaderboard" },
   { label: "About", href: "#about" },
