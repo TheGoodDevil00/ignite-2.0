@@ -27,7 +27,7 @@ export function HeroSection() {
         </p>
         <p className="hero-subtitle">The most awaited football event is back!</p>
 
-        <div className="mt-8 grid w-full max-w-[360px] grid-cols-[repeat(3,minmax(0,1fr))] gap-2 sm:max-w-xl sm:gap-4">
+        <div className="mt-8 grid w-full max-w-[320px] grid-cols-3 gap-1.5 sm:max-w-xl sm:gap-4">
           {buttonLinks.map((button) => (
             <a className="glass-button" href={button.href} key={button.label}>
               {button.label}

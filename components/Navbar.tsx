@@ -11,9 +11,9 @@ export function Navbar() {
           <Image src="/icons/logo.png" alt="" width={32} height={32} priority className="sm:h-[42px] sm:w-[42px]" />
         </a>
 
-        <div className="flex flex-1 items-center justify-center gap-2 overflow-x-auto no-scrollbar sm:gap-6">
+        <div className="flex flex-1 items-center justify-start gap-3 overflow-x-auto no-scrollbar px-1 sm:justify-center sm:gap-6">
           {navLinks.map((link) => (
-            <a className="nav-link whitespace-nowrap" href={link.href} key={`${link.label}-${link.href}`}>
+            <a className="nav-link whitespace-nowrap text-[9px] sm:text-[11px]" href={link.href} key={`${link.label}-${link.href}`}>
               {link.label}
             </a>
           ))}

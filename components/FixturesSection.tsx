@@ -67,9 +67,9 @@ export function FixturesSection() {
                 <p className="text-xs font-semibold text-muted uppercase mt-1">{fixture.time}</p>
               </div>
 
-              <div className="flex-1 flex items-center justify-center gap-4 sm:gap-8 w-full">
-                <div className="flex-1 flex items-center justify-end gap-3 text-right">
-                  <span className="text-sm font-bold text-white whitespace-nowrap">{fixture.teamA}</span>
+              <div className="flex-1 flex items-center justify-center gap-2 sm:gap-8 w-full">
+                <div className="flex-1 flex items-center justify-end gap-2 text-right">
+                  <span className="text-xs font-bold text-white sm:text-sm">{fixture.teamA}</span>
                   <div className="h-8 w-8 rounded-full bg-field border border-subtle flex items-center justify-center text-muted shrink-0">
                     <Shield size={16} />
                   </div>
@@ -85,11 +85,11 @@ export function FixturesSection() {
                   )}
                 </div>
 
-                <div className="flex-1 flex items-center justify-start gap-3 text-left">
+                <div className="flex-1 flex items-center justify-start gap-2 text-left">
                   <div className="h-8 w-8 rounded-full bg-field border border-subtle flex items-center justify-center text-muted shrink-0">
                     <Shield size={16} />
                   </div>
-                  <span className="text-sm font-bold text-white whitespace-nowrap">{fixture.teamB}</span>
+                  <span className="text-xs font-bold text-white sm:text-sm">{fixture.teamB}</span>
                 </div>
               </div>
             </div>
