@@ -1,0 +1,339 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg-primary: #050810;
+  --color-bg-section: #01091c;
+  --color-bg-card: rgba(255, 255, 255, 0.08);
+  --color-accent-red: #e8001d;
+  --color-accent-red-glow: rgba(232, 0, 29, 0.35);
+  --color-text-primary: #ffffff;
+  --color-text-muted: rgba(255, 255, 255, 0.65);
+  --color-border-subtle: rgba(255, 255, 255, 0.12);
+  --color-nav-bg: rgba(0, 0, 0, 0.75);
+  --color-field-bg: rgba(9, 20, 39, 0.8);
+  --color-button-glass: rgba(255, 255, 255, 0.1);
+  --color-button-border: rgba(255, 255, 255, 0.4);
+  --color-whatsapp: #1fae59;
+  --color-status-live: #20d86b;
+  --color-status-completed: #e8001d;
+  --color-status-upcoming: rgba(255, 255, 255, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100svh;
+  margin: 0;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--color-accent-red);
+  color: var(--color-text-primary);
+}
+
+@layer components {
+  .section-container {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-band {
+    @apply relative py-16 md:py-20;
+  }
+
+  .intro-section {
+    position: relative;
+    overflow: hidden;
+    background-image:
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.78)),
+      url("/images/hero-bg.png");
+    background-position: center top;
+    background-size: cover;
+  }
+
+  .intro-section::before {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 50% 36%, rgba(232, 0, 29, 0.2), transparent 34rem),
+      linear-gradient(to bottom, transparent 65%, var(--color-bg-section));
+  }
+
+  .intro-section > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-heading {
+    @apply font-display italic leading-none;
+    letter-spacing: 0;
+  }
+
+  .hero-section {
+    @apply flex min-h-[280px] items-center justify-center pb-8 pt-24 sm:min-h-[440px] md:min-h-[620px] md:pb-14 md:pt-28;
+  }
+
+  .hero-title {
+    @apply text-[48px] sm:text-[72px] lg:text-[112px];
+  }
+
+  .hero-tagline {
+    @apply mt-2 text-sm font-bold uppercase sm:text-2xl;
+    letter-spacing: 0;
+  }
+
+  .hero-subtitle {
+    @apply mt-4 text-[10px] font-black sm:text-base;
+  }
+
+  .glass-button {
+    @apply inline-flex h-[34px] min-w-0 items-center justify-center rounded px-1 text-center text-[9px] font-semibold uppercase leading-tight text-text shadow-glass transition xs:text-[10px] sm:h-11 sm:px-2 sm:text-sm;
+    background: var(--color-button-glass);
+    border: 1px solid var(--color-button-border);
+  }
+
+  .glass-button:hover,
+  .glass-button:focus-visible {
+    @apply bg-accent outline-none;
+  }
+
+  .primary-pill,
+  .register-button {
+    @apply rounded-full bg-accent px-5 py-2 text-xs font-bold uppercase text-text transition;
+  }
+
+  .primary-pill:hover,
+  .primary-pill:focus-visible,
+  .register-button:hover,
+  .register-button:focus-visible {
+    @apply shadow-glow outline-none;
+  }
+
+  .icon-button {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-full border border-subtle bg-card text-text transition;
+  }
+
+  .icon-button:hover,
+  .icon-button:focus-visible {
+    @apply border-accent text-accent outline-none;
+  }
+
+  .nav-link {
+    @apply text-[11px] font-semibold uppercase text-text transition;
+    letter-spacing: 0;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    @apply text-accent outline-none;
+  }
+
+  .mobile-nav-link {
+    @apply border-b border-subtle pb-4 text-2xl font-bold uppercase text-text;
+  }
+
+  .info-tile {
+    @apply flex min-h-[100px] min-w-0 flex-col items-center justify-center overflow-hidden rounded-xl border border-subtle bg-card px-2 py-3 text-center shadow-glass backdrop-blur-md sm:min-h-[132px];
+  }
+
+  .info-tile-label {
+    @apply mt-2 text-[10px] font-semibold uppercase text-text sm:text-xs;
+  }
+
+  .info-tile-value {
+    @apply mt-1 max-w-full break-words text-[10px] font-bold leading-tight text-text sm:text-base;
+  }
+
+  .section-title {
+    @apply font-body text-[28px] font-semibold leading-none text-text sm:text-4xl;
+  }
+
+  .content-heading {
+    @apply font-body text-xl font-bold uppercase text-text sm:text-3xl;
+    letter-spacing: 0;
+  }
+
+  .form-input {
+    @apply h-10 w-full rounded border border-transparent bg-field px-4 text-sm text-text outline-none transition placeholder:text-muted;
+  }
+
+  .form-input:focus {
+    @apply border-accent;
+  }
+
+  .fixture-card {
+    @apply rounded-xl border border-subtle bg-card p-4 shadow-glass backdrop-blur-md;
+  }
+
+  .fixture-team {
+    @apply min-w-0 flex-1 text-sm font-bold text-text;
+  }
+
+  .fixture-score {
+    @apply shrink-0 rounded bg-field px-3 py-1 text-sm font-black text-accent;
+  }
+
+  .status-badge {
+    @apply rounded-full px-3 py-1 text-[10px] font-bold uppercase text-text;
+  }
+
+  .status-upcoming {
+    background: var(--color-status-upcoming);
+  }
+
+  .status-live {
+    background: var(--color-status-live);
+  }
+
+  .status-completed {
+    background: var(--color-status-completed);
+  }
+
+  .footer-title {
+    @apply text-xs font-bold uppercase text-text;
+  }
+
+  .footer-line {
+    @apply flex items-center gap-2;
+  }
+
+  .footer-link {
+    @apply text-sm text-muted transition;
+  }
+
+  .footer-link:hover,
+  .footer-link:focus-visible {
+    @apply text-accent outline-none;
+  }
+
+  .whatsapp-button {
+    @apply rounded bg-whatsapp px-5 py-3 text-sm font-bold uppercase text-text transition;
+  }
+
+  .whatsapp-button:hover,
+  .whatsapp-button:focus-visible {
+    filter: brightness(1.1);
+    outline: none;
+  }
+
+  .sponsor-tile {
+    @apply flex min-h-16 items-center justify-center rounded border border-subtle bg-card px-3 text-center text-xs font-bold uppercase text-text;
+  }
+
+  .social-button {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-full border border-subtle bg-card text-text transition;
+  }
+
+  .social-button:hover,
+  .social-button:focus-visible {
+    @apply border-accent text-accent outline-none;
+  }
+
+  .countdown-screen {
+    position: relative;
+    display: grid;
+    min-height: 100svh;
+    place-items: center;
+    overflow: hidden;
+    padding: 2rem 1rem;
+    background:
+      linear-gradient(rgba(5, 8, 16, 0.82), rgba(5, 8, 16, 0.92)),
+      url("/images/countdown-bg.png") center / cover;
+  }
+
+  .countdown-screen::before {
+    position: absolute;
+    inset: auto -20vw -30svh;
+    height: 70svh;
+    content: "";
+    animation: ambient-glow 3s ease-in-out infinite alternate;
+    background: radial-gradient(circle, var(--color-accent-red-glow), transparent 62%);
+  }
+
+  .countdown-shell {
+    @apply relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center text-center;
+  }
+
+  .countdown-logo {
+    @apply mb-5 rounded-full shadow-glow;
+  }
+
+  .countdown-kicker {
+    @apply text-center text-[11px] font-semibold uppercase text-muted sm:text-sm;
+    letter-spacing: 0.2em;
+  }
+
+  .countdown-title {
+    @apply mt-3 text-[56px] sm:text-[86px];
+  }
+
+  .countdown-label {
+    @apply mt-6 text-xs font-bold uppercase text-text;
+    letter-spacing: 0.3em;
+  }
+
+  .countdown-grid {
+    @apply mt-6 grid w-full max-w-[640px] grid-cols-4 gap-2 sm:gap-4;
+  }
+
+  .countdown-unit {
+    @apply relative flex min-w-0 flex-col items-center rounded-xl border border-subtle bg-card px-2 py-4 backdrop-blur-md;
+  }
+
+  .countdown-number {
+    @apply font-display text-[42px] italic leading-none text-accent sm:text-[64px];
+  }
+
+  .countdown-unit-label {
+    @apply mt-2 text-[10px] font-bold uppercase text-text sm:text-[11px];
+  }
+
+  .countdown-separator {
+    @apply pointer-events-none absolute -right-[9px] top-5 hidden text-3xl font-bold text-text sm:block;
+  }
+}
+
+@keyframes ambient-glow {
+  from {
+    opacity: 0.3;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
