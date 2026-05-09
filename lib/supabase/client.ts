@@ -1,1 +1,1 @@
-export { createClient } from "@/utils/supabase/client";
+export { createClient, isSupabaseConfigured } from "@/utils/supabase/client";

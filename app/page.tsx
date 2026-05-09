@@ -11,7 +11,7 @@ import { LeaderboardSection } from "@/components/LeaderboardSection";
 import { Navbar } from "@/components/Navbar";
 import { RegistrationSection } from "@/components/RegistrationSection";
 import { siteConfigDefaults, type SiteConfig } from "@/lib/siteConfig";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 const SITE_UNLOCKED = process.env.NEXT_PUBLIC_SITE_UNLOCKED === "true";
 
@@ -22,13 +22,19 @@ export default function HomePage() {
     site_locked: SITE_UNLOCKED ? "false" : siteConfigDefaults.site_locked,
     unlock_date: process.env.NEXT_PUBLIC_UNLOCK_DATE ?? siteConfigDefaults.unlock_date,
   });
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(
+    () => (isSupabaseConfigured ? createClient() : null),
+    []
+  );
 
   useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+
     let cancelled = false;
 
     async function loadConfig() {
-      const { data } = await supabase.from("site_config").select("key,value");
+      const { data } = await client.from("site_config").select("key,value");
       if (cancelled || !data) return;
 
       setSiteConfig((current) => ({
@@ -39,7 +45,7 @@ export default function HomePage() {
 
     loadConfig();
 
-    const channel = supabase
+    const channel = client
       .channel("public-site-config")
       .on(
         "postgres_changes",
@@ -50,7 +56,7 @@ export default function HomePage() {
 
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [supabase]);
 

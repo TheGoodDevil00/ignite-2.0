@@ -4,20 +4,26 @@ import { Calendar, MapPin, Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { infoTiles } from "@/lib/mockData";
 import { siteConfigDefaults } from "@/lib/siteConfig";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function InfoTiles() {
   const [eventDateDisplay, setEventDateDisplay] = useState(
     siteConfigDefaults.event_date_display
   );
   const [prizePool, setPrizePool] = useState(siteConfigDefaults.prize_pool);
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(
+    () => (isSupabaseConfigured ? createClient() : null),
+    []
+  );
 
   useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+
     let cancelled = false;
 
     async function loadTiles() {
-      const { data } = await supabase
+      const { data } = await client
         .from("site_config")
         .select("key,value")
         .in("key", ["event_date_display", "prize_pool"]);
@@ -31,7 +37,7 @@ export function InfoTiles() {
 
     loadTiles();
 
-    const channel = supabase
+    const channel = client
       .channel("public-info-tiles")
       .on(
         "postgres_changes",
@@ -42,7 +48,7 @@ export function InfoTiles() {
 
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [supabase]);
 

@@ -6,7 +6,7 @@ import {
   fixtures as fallbackFixtures,
   type FixtureStatus as BaseFixtureStatus,
 } from "@/lib/mockData";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 type FixtureStatus = BaseFixtureStatus | "cancelled";
 
@@ -99,13 +99,19 @@ function mapFixture(match: RawFixture): Fixture {
 export function FixturesSection() {
   const [filter, setFilter] = useState<FixtureStatus | "all">("all");
   const [fixtures, setFixtures] = useState<Fixture[]>(fallbackRows);
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(
+    () => (isSupabaseConfigured ? createClient() : null),
+    []
+  );
 
   useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+
     let cancelled = false;
 
     async function loadFixtures() {
-      const { data } = await supabase
+      const { data } = await client
         .from("matches")
         .select(
           `
@@ -128,7 +134,7 @@ export function FixturesSection() {
 
     loadFixtures();
 
-    const channel = supabase
+    const channel = client
       .channel("public-fixtures")
       .on(
         "postgres_changes",
@@ -144,7 +150,7 @@ export function FixturesSection() {
 
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [supabase]);
 

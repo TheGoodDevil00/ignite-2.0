@@ -5,17 +5,23 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { navLinks, sponsors } from "@/lib/mockData";
 import { siteConfigDefaults } from "@/lib/siteConfig";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function Footer() {
   const [whatsappLink, setWhatsappLink] = useState(siteConfigDefaults.whatsapp_link);
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(
+    () => (isSupabaseConfigured ? createClient() : null),
+    []
+  );
 
   useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+
     let cancelled = false;
 
     async function loadWhatsappLink() {
-      const { data } = await supabase
+      const { data } = await client
         .from("site_config")
         .select("value")
         .eq("key", "whatsapp_link")
@@ -28,7 +34,7 @@ export function Footer() {
 
     loadWhatsappLink();
 
-    const channel = supabase
+    const channel = client
       .channel("public-footer-config")
       .on(
         "postgres_changes",
@@ -39,7 +45,7 @@ export function Footer() {
 
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [supabase]);
 
