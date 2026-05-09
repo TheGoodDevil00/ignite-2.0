@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ExportPdfButton } from "./ExportPdfButton";
 import {
   AlertTriangle,
   CalendarDays,
@@ -137,9 +138,12 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-xs font-bold uppercase text-muted">Tournament control</p>
-        <h1 className="mt-2 text-3xl font-black uppercase text-white">Dashboard</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase text-muted">Tournament control</p>
+          <h1 className="mt-2 text-3xl font-black uppercase text-white">Dashboard</h1>
+        </div>
+        <ExportPdfButton />
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

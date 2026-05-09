@@ -331,6 +331,190 @@ a {
   .countdown-separator {
     @apply pointer-events-none absolute -right-[9px] top-5 hidden text-3xl font-bold text-text sm:block;
   }
+
+  /* ================================================================ */
+  /*  About Section                                                    */
+  /* ================================================================ */
+
+  .about-section {
+    @apply mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 md:pb-24 md:pt-10 lg:px-8;
+  }
+
+  /* ── Hero row: text + bleed image ────────────────────────────── */
+
+  .about-hero-row {
+    @apply relative grid gap-6 md:grid-cols-2 md:gap-0;
+    min-height: 340px;
+  }
+
+  .about-hero-text {
+    @apply relative z-10 flex flex-col justify-center md:pr-10 lg:pr-16;
+  }
+
+  .about-heading {
+    @apply font-body text-[32px] font-semibold leading-none text-text sm:text-5xl lg:text-[56px];
+  }
+
+  .about-lead {
+    @apply mt-5 text-base font-medium leading-relaxed text-muted sm:text-lg sm:leading-8;
+  }
+
+  .about-hero-image {
+    @apply relative overflow-hidden rounded-2xl md:rounded-l-none md:rounded-r-2xl;
+    min-height: 280px;
+  }
+
+  @media (min-width: 768px) {
+    .about-hero-image {
+      position: absolute;
+      right: -1.5rem;
+      top: -1rem;
+      bottom: -1rem;
+      width: 54%;
+      border-radius: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .about-hero-image {
+      right: -2rem;
+    }
+  }
+
+  .about-hero-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(5, 8, 16, 0.7) 0%,
+      rgba(5, 8, 16, 0.15) 60%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  @media (max-width: 767px) {
+    .about-hero-image-overlay {
+      background: linear-gradient(
+        to top,
+        rgba(5, 8, 16, 0.55) 0%,
+        transparent 100%
+      );
+    }
+  }
+
+  /* ── Middle row: carousel + secondary copy ───────────────────── */
+
+  .about-mid-row {
+    @apply mt-10 grid gap-8 md:mt-16 md:grid-cols-[1fr_0.8fr] md:gap-10;
+  }
+
+  .about-carousel-wrapper {
+    @apply overflow-hidden rounded-2xl;
+  }
+
+  .about-mid-text {
+    @apply flex flex-col justify-center;
+  }
+
+  .about-body-paragraph {
+    @apply text-sm leading-relaxed text-muted sm:text-base;
+  }
+
+  .about-body-paragraph + .about-body-paragraph {
+    @apply mt-4;
+  }
+
+  /* ── Carousel ────────────────────────────────────────────────── */
+
+  .about-carousel {
+    @apply relative;
+  }
+
+  .about-carousel-track {
+    @apply flex snap-x snap-mandatory overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .about-carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .about-carousel-slide {
+    @apply relative flex-none snap-start;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+  }
+
+  .about-carousel-arrow {
+    @apply absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-subtle bg-card p-2 text-text shadow-glass backdrop-blur-md transition;
+  }
+
+  .about-carousel-arrow:hover,
+  .about-carousel-arrow:focus-visible {
+    @apply border-accent text-accent outline-none;
+  }
+
+  .about-carousel-arrow--left {
+    left: 0.75rem;
+  }
+
+  .about-carousel-arrow--right {
+    right: 0.75rem;
+  }
+
+  .about-carousel-dots {
+    @apply absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5;
+  }
+
+  .about-carousel-dot {
+    @apply h-2 w-2 rounded-full border border-subtle bg-card transition;
+  }
+
+  .about-carousel-dot--active {
+    @apply w-5 border-accent bg-accent;
+  }
+
+  /* ── Testimonials ────────────────────────────────────────────── */
+
+  .about-testimonial {
+    @apply relative mt-10 rounded-xl border border-subtle bg-card px-6 py-6 shadow-glass backdrop-blur-md md:mt-14 md:max-w-lg md:px-8 md:py-8;
+    font-style: normal;
+  }
+
+  .about-testimonial--right {
+    @apply md:ml-auto;
+  }
+
+  .about-testimonial-icon {
+    @apply mb-3 text-accent opacity-60;
+  }
+
+  .about-testimonial-body {
+    @apply text-sm leading-relaxed text-muted sm:text-base;
+  }
+
+  .about-testimonial-cite {
+    @apply mt-4 block text-xs font-bold uppercase text-text;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Screen-reader only utility ──────────────────────────────── */
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
 
 @keyframes ambient-glow {
