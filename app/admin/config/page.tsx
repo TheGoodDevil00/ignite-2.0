@@ -10,6 +10,8 @@ const defaults: ConfigMap = {
   whatsapp_link: "https://wa.me/",
   announcement_banner: "",
   prize_pool: "Rs 4500",
+  fillout_link: "",
+  leaderboard_visible: "false",
 };
 
 export default async function AdminConfigPage() {

@@ -7,7 +7,7 @@ import { navLinks } from "@/lib/mockData";
 import { siteConfigDefaults } from "@/lib/siteConfig";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import mgocsmLogo from "@/mgocsm logo.png";
-import igniteLogo from "@/logo.svg";
+import igniteLogo from "@/Ignite2.0 logo.svg";
 
 export function Navbar() {
   const [filloutLink, setFilloutLink] = useState(siteConfigDefaults.fillout_link);

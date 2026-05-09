@@ -28,7 +28,7 @@ export function RunFixtureGeneratorButton() {
         <div>
           <p className="text-sm font-black uppercase text-white">Fixture Generator</p>
           <p className="mt-1 text-sm text-muted">
-            Runs the local script with values from scripts/teams.json.
+            Builds fixtures from the registered teams in the database.
           </p>
         </div>
         <SubmitButton />

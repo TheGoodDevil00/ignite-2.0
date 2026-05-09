@@ -4,7 +4,7 @@ import { Camera, CirclePlay, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import { navLinks, sponsors } from "@/lib/mockData";
 import mgocsmLogo from "@/mgocsm logo.png";
-import igniteLogo from "@/logo.svg";
+import igniteLogo from "@/Ignite2.0 logo.svg";
 
 export function Footer() {
   return (

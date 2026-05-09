@@ -8,7 +8,9 @@ type TeamStats = {
   name: string;
   played: number;
   won: number;
+  drawn: number;
   lost: number;
+  points: number;
   goalsFor: number;
   goalsAgainst: number;
 };
@@ -57,7 +59,9 @@ export function LeaderboardSection({ visible }: { visible?: boolean }) {
             name: t.name,
             played: 0,
             won: 0,
+            drawn: 0,
             lost: 0,
+            points: 0,
             goalsFor: 0,
             goalsAgainst: 0,
           });
@@ -76,8 +80,15 @@ export function LeaderboardSection({ visible }: { visible?: boolean }) {
             s.played++;
             s.goalsFor += score.home_score;
             s.goalsAgainst += score.away_score;
-            if (score.home_score > score.away_score) s.won++;
-            else if (score.home_score < score.away_score) s.lost++;
+            if (score.home_score > score.away_score) {
+              s.won++;
+              s.points += 3;
+            } else if (score.home_score < score.away_score) {
+              s.lost++;
+            } else {
+              s.drawn++;
+              s.points += 1;
+            }
           }
 
           if (aId && teamStatsMap.has(aId)) {
@@ -85,16 +96,24 @@ export function LeaderboardSection({ visible }: { visible?: boolean }) {
             s.played++;
             s.goalsFor += score.away_score;
             s.goalsAgainst += score.home_score;
-            if (score.away_score > score.home_score) s.won++;
-            else if (score.away_score < score.home_score) s.lost++;
+            if (score.away_score > score.home_score) {
+              s.won++;
+              s.points += 3;
+            } else if (score.away_score < score.home_score) {
+              s.lost++;
+            } else {
+              s.drawn++;
+              s.points += 1;
+            }
           }
         }
 
         const sortedTeams = Array.from(teamStatsMap.values()).sort((a, b) => {
-          if (b.won !== a.won) return b.won - a.won;
+          if (b.points !== a.points) return b.points - a.points;
           const gdA = a.goalsFor - a.goalsAgainst;
           const gdB = b.goalsFor - b.goalsAgainst;
           if (gdB !== gdA) return gdB - gdA;
+          if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
           return a.name.localeCompare(b.name);
         });
 
@@ -157,13 +176,15 @@ export function LeaderboardSection({ visible }: { visible?: boolean }) {
           </div>
         ) : (
           <div className="mt-8 overflow-x-auto rounded-xl border border-subtle bg-card shadow-glass backdrop-blur">
-            <table className="w-full min-w-[600px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[760px] border-collapse text-left text-sm">
               <thead className="bg-field text-xs uppercase text-muted">
                 <tr>
                   <th className="sticky left-0 bg-field px-4 py-3 z-10 w-[64px] min-w-[64px]">Rank</th>
                   <th className="sticky left-[64px] bg-field px-4 py-3 z-10 min-w-[160px] shadow-[1px_0_0_0_rgba(255,255,255,0.05)]">Team</th>
+                  <th className="px-4 py-3 text-center">Points</th>
                   <th className="px-4 py-3 text-center">Played</th>
                   <th className="px-4 py-3 text-center">Won</th>
+                  <th className="px-4 py-3 text-center">Draw</th>
                   <th className="px-4 py-3 text-center">Lost</th>
                   <th className="px-4 py-3 text-center whitespace-nowrap">Goals For</th>
                   <th className="px-4 py-3 text-center whitespace-nowrap">Goals Against</th>
@@ -176,8 +197,10 @@ export function LeaderboardSection({ visible }: { visible?: boolean }) {
                     <tr className="border-t border-subtle bg-card even:bg-white/[0.02] transition-colors hover:bg-white/[0.05]" key={row.id}>
                       <td className={`sticky left-0 px-4 py-3 font-bold z-10 w-[64px] min-w-[64px] bg-inherit ${rank === 1 ? 'text-accent' : 'text-text'}`}>#{rank}</td>
                       <td className="sticky left-[64px] px-4 py-3 font-semibold text-white z-10 min-w-[160px] bg-inherit shadow-[1px_0_0_0_rgba(255,255,255,0.05)] whitespace-nowrap">{row.name}</td>
+                      <td className="px-4 py-3 text-center font-black text-white bg-inherit">{row.points}</td>
                       <td className="px-4 py-3 text-center text-muted bg-inherit">{row.played}</td>
                       <td className="px-4 py-3 text-center text-muted bg-inherit">{row.won}</td>
+                      <td className="px-4 py-3 text-center text-muted bg-inherit">{row.drawn}</td>
                       <td className="px-4 py-3 text-center text-muted bg-inherit">{row.lost}</td>
                       <td className="px-4 py-3 text-center text-muted bg-inherit">{row.goalsFor}</td>
                       <td className="px-4 py-3 text-center text-muted bg-inherit">{row.goalsAgainst}</td>

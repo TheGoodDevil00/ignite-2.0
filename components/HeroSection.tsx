@@ -6,7 +6,7 @@ import { siteConfigDefaults } from "@/lib/siteConfig";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import Image from "next/image";
 import mgocsmLogo from "@/mgocsm logo.png";
-import igniteLogo from "@/logo.svg";
+import igniteLogo from "@/Ignite2.0 logo.svg";
 
 const defaultButtonLinks = [
   { label: "View Fixtures", href: "#fixtures" },

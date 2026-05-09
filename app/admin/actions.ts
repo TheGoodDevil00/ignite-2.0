@@ -1,17 +1,23 @@
 "use server";
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { generateFixturesFromRegisteredTeams } from "@/lib/fixtureGenerator";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import type { MatchStatus } from "@/lib/supabase/types";
 
-const execFileAsync = promisify(execFile);
+const ADMIN_USERNAME = "admin";
+const ADMIN_EMAIL = "admin@ignite.local";
 
 type ActionResult = {
   ok: boolean;
   message: string;
+};
+
+type ResetTournamentDataPayload = {
+  identifier: string;
+  password: string;
+  confirmation: string;
 };
 
 async function requireAdmin() {
@@ -35,6 +41,12 @@ async function requireAdmin() {
   }
 
   return { supabase, userId };
+}
+
+function getAdminEmail(identifier: string) {
+  return identifier.trim().toLowerCase() === ADMIN_USERNAME
+    ? ADMIN_EMAIL
+    : identifier.trim();
 }
 
 export async function logoutAction() {
@@ -116,16 +128,22 @@ export async function upsertTeam(
   values: {
     name: string;
     group: string;
+    contactDetail: string;
   }
 ): Promise<ActionResult> {
   const { supabase } = await requireAdmin();
   const payload = {
     name: values.name.trim(),
     group: values.group.trim() || null,
+    contact_detail: values.contactDetail.trim(),
   };
 
   if (!payload.name) {
     return { ok: false, message: "Team name is required." };
+  }
+
+  if (!payload.contact_detail) {
+    return { ok: false, message: "Contact detail is required." };
   }
 
   const query = teamId
@@ -143,32 +161,79 @@ export async function upsertTeam(
   return { ok: true, message: teamId ? "Team updated." : "Team added." };
 }
 
-export async function addPlayer(
-  teamId: number,
-  values: {
-    name: string;
-    jerseyNumber: number | null;
-  }
-): Promise<ActionResult> {
+export async function deleteTeam(teamId: number): Promise<ActionResult> {
   const { supabase } = await requireAdmin();
-  const name = values.name.trim();
-
-  if (!name) {
-    return { ok: false, message: "Player name is required." };
-  }
-
-  const { error } = await supabase.from("players").insert({
-    name,
-    jersey_number: values.jerseyNumber,
-    team_id: teamId,
-  });
+  const { error } = await supabase.from("teams").delete().eq("id", teamId);
 
   if (error) {
     return { ok: false, message: error.message };
   }
 
   revalidatePath("/admin/teams");
-  return { ok: true, message: "Player added." };
+  revalidatePath("/");
+  return { ok: true, message: "Team deleted." };
+}
+
+export async function upsertPlayer(
+  playerId: number | null,
+  teamId: number,
+  values: {
+    name: string;
+    jerseyNumber: number;
+  }
+): Promise<ActionResult> {
+  const { supabase } = await requireAdmin();
+  const name = values.name.trim();
+  const jerseyNumber = values.jerseyNumber;
+
+  if (!name) {
+    return { ok: false, message: "Player name is required." };
+  }
+
+  if (!Number.isInteger(jerseyNumber) || jerseyNumber < 0 || jerseyNumber > 999) {
+    return { ok: false, message: "Jersey number must be between 0 and 999." };
+  }
+
+  let duplicateQuery = supabase
+    .from("players")
+    .select("id")
+    .eq("team_id", teamId)
+    .eq("jersey_number", jerseyNumber)
+    .limit(1);
+
+  if (playerId) {
+    duplicateQuery = duplicateQuery.neq("id", playerId);
+  }
+
+  const { data: duplicates, error: duplicateError } = await duplicateQuery;
+
+  if (duplicateError) {
+    return { ok: false, message: duplicateError.message };
+  }
+
+  if ((duplicates ?? []).length > 0) {
+    return { ok: false, message: "Jersey number is already used by this team." };
+  }
+
+  const payload = {
+    name,
+    jersey_number: jerseyNumber,
+    team_id: teamId,
+  };
+
+  const query = playerId
+    ? supabase.from("players").update(payload).eq("id", playerId).eq("team_id", teamId)
+    : supabase.from("players").insert(payload);
+
+  const { error } = await query;
+
+  if (error) {
+    return { ok: false, message: error.message };
+  }
+
+  revalidatePath("/admin/teams");
+  revalidatePath("/");
+  return { ok: true, message: playerId ? "Player updated." : "Player added." };
 }
 
 export async function removePlayer(playerId: number): Promise<ActionResult> {
@@ -180,6 +245,7 @@ export async function removePlayer(playerId: number): Promise<ActionResult> {
   }
 
   revalidatePath("/admin/teams");
+  revalidatePath("/");
   return { ok: true, message: "Player removed." };
 }
 
@@ -206,6 +272,101 @@ export async function updateConfigValue(
   return { ok: true, message: "Saved." };
 }
 
+export async function resetTournamentData(
+  values: ResetTournamentDataPayload
+): Promise<ActionResult> {
+  const { userId } = await requireAdmin();
+  const identifier = values.identifier.trim();
+  const password = values.password;
+  const confirmation = values.confirmation.trim();
+
+  if (!identifier || !password) {
+    return { ok: false, message: "Admin username and password are required." };
+  }
+
+  if (confirmation !== "CLEAR") {
+    return { ok: false, message: 'Type "CLEAR" to confirm.' };
+  }
+
+  const service = createServiceRoleClient();
+  const { data: authData, error: authError } = await service.auth.signInWithPassword({
+    email: getAdminEmail(identifier),
+    password,
+  });
+  const authedUserId = authData.user?.id;
+
+  if (authError || !authedUserId) {
+    return { ok: false, message: "Admin credentials could not be verified." };
+  }
+
+  if (authedUserId !== userId) {
+    return { ok: false, message: "Use the same admin account that is currently signed in." };
+  }
+
+  const { data: profile, error: profileError } = await service
+    .from("profiles")
+    .select("role")
+    .eq("id", authedUserId)
+    .single();
+
+  if (profileError || profile?.role !== "admin") {
+    return { ok: false, message: "This account is not an IGNITE admin." };
+  }
+
+  const deletes = [
+    {
+      table: "player_match_stats",
+      optional: true,
+      query: service.from("player_match_stats").delete().not("id", "is", null),
+    },
+    {
+      table: "match_scores",
+      optional: false,
+      query: service.from("match_scores").delete().not("match_id", "is", null),
+    },
+    {
+      table: "matches",
+      optional: false,
+      query: service.from("matches").delete().not("id", "is", null),
+    },
+    {
+      table: "rounds",
+      optional: false,
+      query: service.from("rounds").delete().not("id", "is", null),
+    },
+    {
+      table: "players",
+      optional: false,
+      query: service.from("players").delete().not("id", "is", null),
+    },
+    {
+      table: "teams",
+      optional: false,
+      query: service.from("teams").delete().not("id", "is", null),
+    },
+  ];
+
+  for (const item of deletes) {
+    const { error } = await item.query;
+
+    if (error) {
+      if (item.optional && (error.message.includes("schema cache") || error.code === "42P01")) {
+        continue;
+      }
+
+      return { ok: false, message: error.message };
+    }
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/teams");
+  revalidatePath("/admin/fixtures");
+  revalidatePath("/admin/scores");
+  revalidatePath("/");
+
+  return { ok: true, message: "Tournament teams, players, fixtures, and scores were cleared." };
+}
+
 export async function runFixtureGenerator(
   _previousState: ActionResult | null,
   _formData?: FormData
@@ -213,15 +374,7 @@ export async function runFixtureGenerator(
   await requireAdmin();
 
   try {
-    const command = process.platform === "win32" ? "npx.cmd" : "npx";
-    const { stdout, stderr } = await execFileAsync(
-      command,
-      ["tsx", "scripts/generateFixtures.ts"],
-      {
-        cwd: process.cwd(),
-        maxBuffer: 1024 * 1024,
-      }
-    );
+    const result = await generateFixturesFromRegisteredTeams(createServiceRoleClient());
 
     revalidatePath("/admin/fixtures");
     revalidatePath("/admin/scores");
@@ -229,7 +382,12 @@ export async function runFixtureGenerator(
 
     return {
       ok: true,
-      message: stdout || stderr || "Fixture generator completed.",
+      message: [
+        "Fixture generator completed.",
+        `${result.teams} teams, ${result.rounds} rounds, ${result.matches} matches created.`,
+        "",
+        ...result.lines,
+      ].join("\n"),
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Fixture generator failed.";

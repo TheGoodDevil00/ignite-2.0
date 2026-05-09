@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { useCountdown } from "@/lib/countdown";
 import mgocsmLogo from "@/mgocsm logo.png";
-import igniteLogo from "@/logo.svg";
+import igniteLogo from "@/Ignite2.0 logo.svg";
 
 type CountdownScreenProps = {
   unlockDate: string;

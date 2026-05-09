@@ -7,29 +7,58 @@ type RawTeam = {
   id: number;
   name: string;
   group: string | null;
-  players: Array<{
-    id: number;
-    name: string;
-    jersey_number: number | null;
-  }> | null;
+  contact_detail: string | null;
+};
+
+type RawPlayer = {
+  id: number;
+  name: string;
+  jersey_number: number | null;
+  team_id: number;
 };
 
 export default async function AdminTeamsPage() {
   const supabase = await createClient();
-  const { data } = await supabase
+  const [teamsResult, playersResult] = await Promise.all([
+    supabase
     .from("teams")
-    .select("id,name,group,players(id,name,jersey_number)")
-    .order("name", { ascending: true });
+      .select("id,name,group,contact_detail")
+      .order("name", { ascending: true }),
+    supabase
+      .from("players")
+      .select("id,name,jersey_number,team_id")
+      .order("jersey_number", { ascending: true, nullsFirst: false })
+      .order("name", { ascending: true }),
+  ]);
 
-  const teams: TeamAdminRow[] = ((data ?? []) as unknown as RawTeam[]).map((team) => ({
+  if (teamsResult.error) {
+    throw new Error(teamsResult.error.message);
+  }
+
+  if (playersResult.error) {
+    throw new Error(playersResult.error.message);
+  }
+
+  const playersByTeam = new Map<number, RawPlayer[]>();
+
+  for (const player of (playersResult.data ?? []) as RawPlayer[]) {
+    const current = playersByTeam.get(player.team_id) ?? [];
+    current.push(player);
+    playersByTeam.set(player.team_id, current);
+  }
+
+  const teams: TeamAdminRow[] = ((teamsResult.data ?? []) as unknown as RawTeam[]).map((team) => ({
     id: team.id,
     name: team.name,
     group: team.group,
-    players: (team.players ?? [])
+    contactDetail: team.contact_detail,
+    players: (playersByTeam.get(team.id) ?? [])
       .map((player) => ({
         id: player.id,
         name: player.name,
         jerseyNumber: player.jersey_number,
+        goalsTotal: 0,
+        savesTotal: 0,
       }))
       .sort((a, b) => (a.jerseyNumber ?? 999) - (b.jerseyNumber ?? 999)),
   }));

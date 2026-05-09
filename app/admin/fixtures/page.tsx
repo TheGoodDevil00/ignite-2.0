@@ -28,7 +28,7 @@ function normalizeScore(raw: RawFixture["match_scores"]) {
 
 export default async function AdminFixturesPage() {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("matches")
     .select(
       `
@@ -46,6 +46,10 @@ export default async function AdminFixturesPage() {
       `
     )
     .order("estimated_start", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   const fixtures: FixtureAdminRow[] = ((data ?? []) as unknown as RawFixture[]).map(
     (match) => ({

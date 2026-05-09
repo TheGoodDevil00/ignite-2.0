@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { CalendarDays, ListChecks, RadioTower, Trophy, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarDays,
+  CheckCircle2,
+  ListChecks,
+  RadioTower,
+  Trophy,
+  Users,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { MatchStatus } from "@/lib/supabase/types";
 
@@ -12,7 +20,7 @@ type CountCard = {
 };
 
 async function countRows(
-  table: "teams" | "matches",
+  table: "teams" | "matches" | "match_scores",
   options?: {
     status?: MatchStatus;
     start?: string;
@@ -25,6 +33,13 @@ async function countRows(
     const { count } = await supabase
       .from("teams")
       .select("id", { count: "exact", head: true });
+    return count ?? 0;
+  }
+
+  if (table === "match_scores") {
+    const { count } = await supabase
+      .from("match_scores")
+      .select("match_id", { count: "exact", head: true });
     return count ?? 0;
   }
 
@@ -53,10 +68,11 @@ export default async function AdminDashboardPage() {
   const endOfDay = new Date(startOfDay);
   endOfDay.setDate(endOfDay.getDate() + 1);
 
-  const [totalTeams, totalMatches, matchesToday, completedMatches] =
+  const [totalTeams, totalMatches, totalScores, matchesToday, completedMatches] =
     await Promise.all([
       countRows("teams"),
       countRows("matches"),
+      countRows("match_scores"),
       countRows("matches", {
         start: startOfDay.toISOString(),
         end: endOfDay.toISOString(),
@@ -69,6 +85,33 @@ export default async function AdminDashboardPage() {
     { label: "Total Matches", value: totalMatches, icon: CalendarDays },
     { label: "Matches Today", value: matchesToday, icon: RadioTower },
     { label: "Completed", value: completedMatches, icon: Trophy },
+  ];
+
+  const statusCards = [
+    {
+      label: "Teams",
+      isEmpty: totalTeams === 0,
+      message:
+        totalTeams === 0
+          ? "No teams registered. Add teams in the Teams section."
+          : `${totalTeams} teams registered.`,
+    },
+    {
+      label: "Fixtures",
+      isEmpty: totalMatches === 0,
+      message:
+        totalMatches === 0
+          ? "No fixtures generated. Run the fixture script."
+          : `${totalMatches} fixtures generated.`,
+    },
+    {
+      label: "Scores",
+      isEmpty: totalScores === 0,
+      message:
+        totalScores === 0
+          ? "No scores recorded yet."
+          : `${totalScores} score ${totalScores === 1 ? "record" : "records"} saved.`,
+    },
   ];
 
   const actions = [
@@ -109,6 +152,31 @@ export default async function AdminDashboardPage() {
                 <Icon size={20} className="text-accent" />
               </div>
               <p className="mt-4 text-4xl font-black text-white">{card.value}</p>
+            </article>
+          );
+        })}
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        {statusCards.map((card) => {
+          const Icon = card.isEmpty ? AlertTriangle : CheckCircle2;
+          return (
+            <article
+              className={`rounded-lg border p-4 shadow-glass ${
+                card.isEmpty
+                  ? "border-amber-400/40 bg-amber-400/10"
+                  : "border-emerald-400/40 bg-emerald-400/10"
+              }`}
+              key={card.label}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-black uppercase text-white">{card.label}</p>
+                <Icon
+                  size={20}
+                  className={card.isEmpty ? "text-amber-300" : "text-emerald-300"}
+                />
+              </div>
+              <p className="mt-3 text-sm font-semibold leading-6 text-muted">{card.message}</p>
             </article>
           );
         })}

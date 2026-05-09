@@ -45,6 +45,7 @@ export type Database = {
           name: string;
           group: string | null;
           captain_id: number | null;
+          contact_detail: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -53,6 +54,7 @@ export type Database = {
           name: string;
           group?: string | null;
           captain_id?: number | null;
+          contact_detail?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -61,6 +63,7 @@ export type Database = {
           name?: string;
           group?: string | null;
           captain_id?: number | null;
+          contact_detail?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -80,6 +83,8 @@ export type Database = {
           name: string;
           jersey_number: number | null;
           team_id: number;
+          goals_total: number;
+          saves_total: number;
           created_at: string;
           updated_at: string;
         };
@@ -88,6 +93,8 @@ export type Database = {
           name: string;
           jersey_number?: number | null;
           team_id: number;
+          goals_total?: number;
+          saves_total?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -96,6 +103,8 @@ export type Database = {
           name?: string;
           jersey_number?: number | null;
           team_id?: number;
+          goals_total?: number;
+          saves_total?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -142,6 +151,9 @@ export type Database = {
           is_bye: boolean;
           bye_team_id: number | null;
           scorer_id: string | null;
+          winner_id: number | null;
+          next_match_id: number | null;
+          next_match_slot: "home" | "away" | null;
           match_number: number;
           created_at: string;
           updated_at: string;
@@ -157,6 +169,9 @@ export type Database = {
           is_bye?: boolean;
           bye_team_id?: number | null;
           scorer_id?: string | null;
+          winner_id?: number | null;
+          next_match_id?: number | null;
+          next_match_slot?: "home" | "away" | null;
           match_number: number;
           created_at?: string;
           updated_at?: string;
@@ -172,6 +187,9 @@ export type Database = {
           is_bye?: boolean;
           bye_team_id?: number | null;
           scorer_id?: string | null;
+          winner_id?: number | null;
+          next_match_id?: number | null;
+          next_match_slot?: "home" | "away" | null;
           match_number?: number;
           created_at?: string;
           updated_at?: string;
@@ -210,6 +228,62 @@ export type Database = {
             columns: ["scorer_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey";
+            columns: ["winner_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "matches_next_match_id_fkey";
+            columns: ["next_match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      player_match_stats: {
+        Row: {
+          id: string;
+          match_id: number;
+          player_id: number;
+          goals: number;
+          saves: number;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          match_id: number;
+          player_id: number;
+          goals?: number;
+          saves?: number;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          match_id?: number;
+          player_id?: number;
+          goals?: number;
+          saves?: number;
+          created_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "player_match_stats_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "player_match_stats_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
             referencedColumns: ["id"];
           },
         ];
@@ -284,7 +358,34 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      create_bracket_fixtures: {
+        Args: {
+          p_teams: Json;
+          p_rounds: Json;
+          p_matches: Json;
+        };
+        Returns: Json;
+      };
+      advance_match_winner: {
+        Args: {
+          p_match_id: number;
+          p_winner_id: number;
+          p_slot_minutes?: number;
+        };
+        Returns: void;
+      };
+      apply_player_match_stat_delta: {
+        Args: {
+          p_match_id: number;
+          p_player_id: number;
+          p_stat: string;
+          p_delta: number;
+          p_updated_by: string;
+        };
+        Returns: Json;
+      };
+    };
     Enums: {
       user_role: UserRole;
       match_status: MatchStatus;

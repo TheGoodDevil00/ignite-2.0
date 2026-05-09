@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Shield } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  RadioTower,
+  Shield,
+  type LucideIcon,
+} from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 type FixtureStatus = "upcoming" | "live" | "completed" | "cancelled";
@@ -9,11 +15,15 @@ type FixtureStatus = "upcoming" | "live" | "completed" | "cancelled";
 type Fixture = {
   id: number;
   matchNumber: number;
+  roundName: string;
+  roundNumber: number;
   teamA: string;
   teamB: string;
+  estimatedStart: string | null;
   time: string;
   status: FixtureStatus;
   score: string;
+  winnerName: string | null;
 };
 
 type RawFixture = {
@@ -25,6 +35,8 @@ type RawFixture = {
   home_team: { name: string } | null;
   away_team: { name: string } | null;
   bye_team: { name: string } | null;
+  winner: { name: string } | null;
+  round: { name: string; round_number: number } | null;
   match_scores: { home_score: number; away_score: number } | null | Array<{
     home_score: number;
     away_score: number;
@@ -67,17 +79,113 @@ function normalizeScore(raw: RawFixture["match_scores"]) {
 
 function mapFixture(match: RawFixture): Fixture {
   const status = mapStatus(match.status);
+  const score = normalizeScore(match.match_scores);
+
   return {
     id: match.id,
     matchNumber: match.match_number,
+    roundName: match.round?.name ?? "Round TBD",
+    roundNumber: match.round?.round_number ?? 999,
     teamA: match.is_bye
       ? match.bye_team?.name ?? match.home_team?.name ?? "Bye"
       : match.home_team?.name ?? "TBD",
     teamB: match.is_bye ? "BYE" : match.away_team?.name ?? "TBD",
+    estimatedStart: match.estimated_start,
     time: formatTime(match.estimated_start),
     status,
-    score: status === "upcoming" ? "-" : normalizeScore(match.match_scores),
+    score: status === "upcoming" ? "-" : score,
+    winnerName: status === "completed" ? match.winner?.name ?? null : null,
   };
+}
+
+function fixtureTimeValue(fixture: Fixture, fallback = Number.MAX_SAFE_INTEGER) {
+  const value = fixture.estimatedStart ? Date.parse(fixture.estimatedStart) : NaN;
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function DashboardMatch({ fixture }: { fixture: Fixture }) {
+  const isLive = fixture.status === "live";
+  const isCompleted = fixture.status === "completed";
+
+  return (
+    <article className="rounded-lg border border-subtle bg-card p-4 shadow-glass backdrop-blur">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-black uppercase text-accent">
+            Match {fixture.matchNumber}
+          </p>
+          <p className="mt-1 truncate text-xs font-bold uppercase text-muted">
+            {fixture.roundName}
+          </p>
+        </div>
+        <span
+          className={`rounded border px-2 py-1 text-[10px] font-black uppercase ${
+            isLive
+              ? "border-amber-300/40 bg-amber-300/15 text-amber-200"
+              : isCompleted
+                ? "border-emerald-300/40 bg-emerald-300/15 text-emerald-200"
+                : "border-white/15 bg-white/10 text-muted"
+          }`}
+        >
+          {statusLabels[fixture.status]}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+        <p className="truncate text-right text-xs font-black text-white sm:text-sm">
+          {fixture.teamA}
+        </p>
+        <p className={`font-display text-3xl italic leading-none ${isLive ? "text-accent" : "text-white"}`}>
+          {isLive || isCompleted ? fixture.score : "VS"}
+        </p>
+        <p className="truncate text-left text-xs font-black text-white sm:text-sm">
+          {fixture.teamB}
+        </p>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-3 text-xs font-semibold uppercase text-muted">
+        <span>{fixture.time}</span>
+        {fixture.winnerName ? (
+          <span className="inline-flex items-center gap-1 text-emerald-200">
+            <CheckCircle2 size={13} />
+            {fixture.winnerName}
+          </span>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function DashboardColumn({
+  emptyText,
+  fixtures,
+  icon: Icon,
+  title,
+}: {
+  emptyText: string;
+  fixtures: Fixture[];
+  icon: LucideIcon;
+  title: string;
+}) {
+  return (
+    <section className="min-w-0">
+      <div className="mb-3 flex items-center gap-2 text-sm font-black uppercase text-white">
+        <Icon size={17} className="text-accent" />
+        {title}
+      </div>
+      {fixtures.length > 0 ? (
+        <div className="grid gap-3">
+          {fixtures.map((fixture) => (
+            <DashboardMatch fixture={fixture} key={fixture.id} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-subtle bg-card p-5 text-center text-sm font-semibold text-muted">
+          {emptyText}
+        </div>
+      )}
+    </section>
+  );
 }
 
 export function FixturesSection() {
@@ -126,6 +234,8 @@ export function FixturesSection() {
               home_team:teams!matches_home_team_id_fkey(name),
               away_team:teams!matches_away_team_id_fkey(name),
               bye_team:teams!matches_bye_team_id_fkey(name),
+              winner:teams!matches_winner_id_fkey(name),
+              round:rounds(name, round_number),
               match_scores(home_score, away_score)
             `
           )
@@ -174,6 +284,35 @@ export function FixturesSection() {
   const filteredFixtures = fixtures.filter(
     (fixture) => filter === "all" || fixture.status === filter
   );
+  const liveFixtures = useMemo(
+    () =>
+      fixtures
+        .filter((fixture) => fixture.status === "live")
+        .sort((a, b) => fixtureTimeValue(a) - fixtureTimeValue(b))
+        .slice(0, 3),
+    [fixtures]
+  );
+  const recentCompletedFixtures = useMemo(
+    () =>
+      fixtures
+        .filter((fixture) => fixture.status === "completed")
+        .sort((a, b) => fixtureTimeValue(b, 0) - fixtureTimeValue(a, 0))
+        .slice(0, 3),
+    [fixtures]
+  );
+  const nextFixtures = useMemo(
+    () =>
+      fixtures
+        .filter((fixture) => fixture.status === "upcoming")
+        .sort((a, b) => {
+          if (a.roundNumber !== b.roundNumber) return a.roundNumber - b.roundNumber;
+          const timeDelta = fixtureTimeValue(a) - fixtureTimeValue(b);
+          if (timeDelta !== 0) return timeDelta;
+          return a.matchNumber - b.matchNumber;
+        })
+        .slice(0, 3),
+    [fixtures]
+  );
 
   return (
     <section id="fixtures" className="section-band bg-section">
@@ -181,6 +320,29 @@ export function FixturesSection() {
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="content-heading">Fixtures</h2>
         </div>
+
+        {!loading && !error && !noTeams ? (
+          <div className="mt-8 grid gap-5 lg:grid-cols-3">
+            <DashboardColumn
+              emptyText="No live matches right now."
+              fixtures={liveFixtures}
+              icon={RadioTower}
+              title="Live Now"
+            />
+            <DashboardColumn
+              emptyText="Results will appear here."
+              fixtures={recentCompletedFixtures}
+              icon={CheckCircle2}
+              title="Recent Results"
+            />
+            <DashboardColumn
+              emptyText="Next matches are TBD."
+              fixtures={nextFixtures}
+              icon={Clock3}
+              title="Up Next"
+            />
+          </div>
+        ) : null}
 
         <div className="mb-8 mt-8 flex flex-wrap justify-center gap-2">
           {filterOptions.map((option) => (
