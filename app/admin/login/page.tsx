@@ -3,8 +3,11 @@
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useState } from "react";
-import { LockKeyhole, Mail } from "lucide-react";
+import { LockKeyhole, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+
+const ADMIN_USERNAME = "admin";
+const ADMIN_EMAIL = "admin@ignite.local";
 
 function AdminLoginForm() {
   const router = useRouter();
@@ -18,8 +21,12 @@ function AdminLoginForm() {
     setLoading(true);
 
     const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "");
+    const identifier = String(formData.get("identifier") ?? "").trim();
     const password = String(formData.get("password") ?? "");
+    const email =
+      identifier.toLowerCase() === ADMIN_USERNAME
+        ? ADMIN_EMAIL
+        : identifier;
     const supabase = createClient();
 
     const { error: loginError } = await supabase.auth.signInWithPassword({
@@ -68,13 +75,13 @@ function AdminLoginForm() {
 
         <form className="mt-6 grid gap-3" onSubmit={onSubmit}>
           <label className="relative block">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+            <UserRound className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
             <input
               className="form-input h-12 pl-10"
-              name="email"
-              type="email"
-              placeholder="Admin email"
-              autoComplete="email"
+              name="identifier"
+              type="text"
+              placeholder="Username"
+              autoComplete="username"
               required
             />
           </label>

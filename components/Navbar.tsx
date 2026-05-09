@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ShieldCheck } from "lucide-react";
 import { navLinks } from "@/lib/mockData";
 
 export function Navbar() {
@@ -19,9 +20,19 @@ export function Navbar() {
           ))}
         </div>
 
-        <a className="register-button shrink-0 px-3 py-1.5 text-[10px] sm:px-5 sm:py-2 sm:text-xs" href="#register">
-          Register
-        </a>
+        <div className="flex shrink-0 items-center gap-2">
+          <a
+            className="register-button inline-flex items-center gap-1 px-3 py-1.5 text-[10px] sm:px-4 sm:py-2 sm:text-xs"
+            href="/admin"
+            aria-label="Open admin dashboard"
+          >
+            <ShieldCheck size={14} aria-hidden="true" />
+            Admin
+          </a>
+          <a className="register-button px-3 py-1.5 text-[10px] sm:px-5 sm:py-2 sm:text-xs" href="#register">
+            Register
+          </a>
+        </div>
       </nav>
     </header>
   );

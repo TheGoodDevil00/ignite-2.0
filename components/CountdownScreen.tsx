@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { ShieldCheck } from "lucide-react";
 import { useCountdown } from "@/lib/countdown";
 
 type CountdownScreenProps = {
@@ -82,6 +83,15 @@ export function CountdownScreen({
         >
           Unlock Site Now
         </button>
+
+        <a
+          className="primary-pill mt-3 inline-flex items-center gap-2"
+          href="/admin"
+          aria-label="Open admin dashboard"
+        >
+          <ShieldCheck size={16} aria-hidden="true" />
+          Admin Dashboard
+        </a>
       </div>
     </main>
   );
