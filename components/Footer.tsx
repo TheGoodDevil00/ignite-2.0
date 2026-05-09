@@ -1,6 +1,7 @@
 "use client";
 
-import { Camera, CirclePlay, Mail, MapPin, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
+import InstagramIcon from "./InstagramIcon";
 import Image from "next/image";
 import { navLinks, sponsors } from "@/lib/mockData";
 import mgocsmLogo from "@/mgocsm logo.png";
@@ -43,22 +44,67 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 grid gap-8 border-t border-subtle pt-8 md:grid-cols-3">
+        <div className="mt-12 grid gap-8 border-t border-subtle pt-8 md:grid-cols-[2fr_1fr_1fr]">
           <div>
             <p className="footer-title">Contact Us</p>
-            <div className="mt-4 space-y-3 text-sm text-muted">
-              <p className="footer-line">
-                <Phone aria-hidden="true" size={15} />
-                +91 98765 43210
-              </p>
-              <p className="footer-line">
-                <Mail aria-hidden="true" size={15} />
-                ignite@football.com
-              </p>
-              <p className="footer-line">
-                <MapPin aria-hidden="true" size={15} />
-                Turf Dehu Road
-              </p>
+            <div className="mt-5 grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 text-sm text-muted">
+              
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-text/70 uppercase tracking-wider">Operations</span>
+                <a href="tel:+918010065098" className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors">
+                  <Phone size={14} className="text-accent" /> 
+                  <span>Aaron: +91 80100 65098</span>
+                </a>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-text/70 uppercase tracking-wider">App & Score</span>
+                <a href="tel:+917507399206" className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors">
+                  <Phone size={14} className="text-accent" /> 
+                  <span>Anisha: +91 75073 99206</span>
+                </a>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-text/70 uppercase tracking-wider">Disputes</span>
+                <a href="tel:+917507681331" className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors">
+                  <Phone size={14} className="text-accent" /> 
+                  <span>Nikhil: +91 75076 81331</span>
+                </a>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-text/70 uppercase tracking-wider">Food</span>
+                <a href="tel:+917058035413" className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors">
+                  <Phone size={14} className="text-accent" /> 
+                  <span>Greg: +91 70580 35413</span>
+                </a>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-text/70 uppercase tracking-wider">First Aid</span>
+                <a href="tel:+917757040841" className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors">
+                  <Phone size={14} className="text-accent" /> 
+                  <span>Rini: +91 77570 40841</span>
+                </a>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-text/70 uppercase tracking-wider">Equipment</span>
+                <a href="tel:+918799939805" className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors">
+                  <Phone size={14} className="text-accent" /> 
+                  <span>+91 87999 39805</span>
+                </a>
+              </div>
+
+              <div className="flex flex-col sm:col-span-2">
+                <span className="text-[10px] font-bold text-text/70 uppercase tracking-wider">Review, Feedback & Others</span>
+                <a href="tel:+917420851640" className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors">
+                  <Phone size={14} className="text-accent" /> 
+                  <span>Bryan: +91 74208 51640</span>
+                </a>
+              </div>
+
             </div>
           </div>
 
@@ -76,21 +122,25 @@ export function Footer() {
           <div>
             <p className="footer-title">Social</p>
             <div className="mt-4 flex gap-3">
-              <a className="social-button" href="#" aria-label="Instagram">
-                <Camera aria-hidden="true" size={18} />
-              </a>
-              <a className="social-button" href="#" aria-label="YouTube">
-                <CirclePlay aria-hidden="true" size={18} />
-              </a>
-              <a className="social-button" href="mailto:ignite@football.com" aria-label="Email">
-                <Mail aria-hidden="true" size={18} />
+              <a className="social-button" href="https://www.instagram.com/mgocsm_dehuroad/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <InstagramIcon size={18} />
               </a>
             </div>
           </div>
         </div>
       </div>
-      <div className="bg-accent py-3 text-center text-xs font-semibold uppercase text-text">
-        IGNITE 2.0. All rights reserved.
+      <div className="bg-accent py-3 text-xs font-semibold uppercase text-text">
+        <div className="section-container flex flex-col items-center justify-between gap-2 sm:flex-row">
+          <p>IGNITE 2.0 MGOCSM. All rights reserved.</p>
+          <a 
+            href="https://github.com/TheGoodDevil00" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:underline opacity-80 hover:opacity-100 transition-opacity"
+          >
+            Made by Hitesh
+          </a>
+        </div>
       </div>
     </footer>
   );

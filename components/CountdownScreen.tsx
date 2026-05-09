@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { useCountdown } from "@/lib/countdown";
+import { siteConfigDefaults } from "@/lib/siteConfig";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import mgocsmLogo from "@/mgocsm logo.png";
 import igniteLogo from "@/Ignite2.0 logo.svg";
 
@@ -30,6 +33,45 @@ export function CountdownScreen({
   onUnlockNow,
 }: CountdownScreenProps) {
   const { timeLeft, tick } = useCountdown(unlockDate, onComplete);
+  const [filloutLink, setFilloutLink] = useState(siteConfigDefaults.fillout_link);
+  const supabase = useMemo(
+    () => (isSupabaseConfigured ? createClient() : null),
+    []
+  );
+
+  useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+    let cancelled = false;
+
+    async function loadConfig() {
+      const { data } = await client
+        .from("site_config")
+        .select("value")
+        .eq("key", "fillout_link")
+        .maybeSingle();
+
+      if (!cancelled && data) {
+        setFilloutLink(data.value);
+      }
+    }
+
+    loadConfig();
+
+    const channel = client
+      .channel("public-countdown-config")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_config", filter: "key=eq.fillout_link" },
+        () => loadConfig()
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      client.removeChannel(channel);
+    };
+  }, [supabase]);
 
   return (
     <main className="countdown-screen">
@@ -87,6 +129,18 @@ export function CountdownScreen({
             </div>
           ))}
         </div>
+
+        {filloutLink ? (
+          <a
+            className="primary-pill mt-8 inline-flex items-center gap-2"
+            href={filloutLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ marginBottom: "-1rem" }}
+          >
+            JOIN NOW
+          </a>
+        ) : null}
 
         {/* TEMP: remove this manual unlock button before shipping to production. */}
         <button
