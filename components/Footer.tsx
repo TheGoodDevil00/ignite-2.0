@@ -1,72 +1,34 @@
 "use client";
 
-import { Camera, CirclePlay, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Camera, CirclePlay, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
 import { navLinks, sponsors } from "@/lib/mockData";
-import { siteConfigDefaults } from "@/lib/siteConfig";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import mgocsmLogo from "@/mgocsm logo.png";
+import igniteLogo from "@/logo.svg";
 
 export function Footer() {
-  const [whatsappLink, setWhatsappLink] = useState(siteConfigDefaults.whatsapp_link);
-  const supabase = useMemo(
-    () => (isSupabaseConfigured ? createClient() : null),
-    []
-  );
-
-  useEffect(() => {
-    if (!supabase) return;
-    const client = supabase;
-
-    let cancelled = false;
-
-    async function loadWhatsappLink() {
-      const { data } = await client
-        .from("site_config")
-        .select("value")
-        .eq("key", "whatsapp_link")
-        .maybeSingle();
-
-      if (!cancelled && data?.value) {
-        setWhatsappLink(data.value);
-      }
-    }
-
-    loadWhatsappLink();
-
-    const channel = client
-      .channel("public-footer-config")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "site_config", filter: "key=eq.whatsapp_link" },
-        () => loadWhatsappLink()
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      client.removeChannel(channel);
-    };
-  }, [supabase]);
-
   return (
     <footer id="contact" className="bg-section">
       <div className="section-container py-14">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <div>
-            <div className="flex items-center gap-3">
-              <Image src="/icons/logo.png" alt="" width={52} height={52} />
-              <div>
-                <p className="font-display text-4xl italic leading-none">
-                  IGNITE <span className="text-accent">2.0</span>
-                </p>
-                <p className="mt-1 text-sm text-muted">Join our community</p>
-              </div>
+          <div className="flex flex-col items-center justify-center sm:items-start">
+            <div className="flex items-center justify-center gap-4">
+              <Image
+                src={mgocsmLogo}
+                alt="MGOCSM Logo"
+                width={100}
+                height={32}
+                className="h-[32px] w-auto object-contain"
+              />
+              <Image
+                src={igniteLogo}
+                alt="IGNITE 2.0 shield"
+                width={100}
+                height={32}
+                className="h-[32px] w-auto object-contain"
+              />
             </div>
-            <a className="whatsapp-button mt-6 inline-flex items-center gap-2" href={whatsappLink}>
-              <MessageCircle aria-hidden="true" size={18} />
-              Join WhatsApp Group
-            </a>
+            <p className="mt-4 text-center text-sm text-muted sm:text-left">Join our community</p>
           </div>
 
           <div>

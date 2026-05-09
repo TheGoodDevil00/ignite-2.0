@@ -4,6 +4,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { useCountdown } from "@/lib/countdown";
+import mgocsmLogo from "@/mgocsm logo.png";
+import igniteLogo from "@/logo.svg";
 
 type CountdownScreenProps = {
   unlockDate: string;
@@ -35,17 +37,28 @@ export function CountdownScreen({
         <motion.div
           animate={{ opacity: [0.86, 1, 0.86], scale: [0.98, 1, 0.98] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className="countdown-logo"
+          className="countdown-logo flex items-center justify-center gap-4"
         >
           <Image
-            src="/icons/logo.png"
+            src={mgocsmLogo}
+            alt="MGOCSM Logo"
+            width={120}
+            height={60}
+            className="h-[60px] w-auto object-contain"
+            priority
+          />
+          <div className="h-[32px] w-[1px] bg-white/20" />
+          <Image
+            src={igniteLogo}
             alt="IGNITE 2.0 shield"
-            width={86}
-            height={86}
+            width={120}
+            height={60}
+            className="h-[60px] w-auto object-contain"
             priority
           />
         </motion.div>
 
+        <p className="countdown-kicker" style={{ marginBottom: "0.5rem" }}>26TH JULY</p>
         <p className="countdown-kicker">Something big is coming!!!</p>
         <h1 className="brand-heading countdown-title">
           <span>IGNITE</span>

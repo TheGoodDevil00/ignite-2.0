@@ -9,7 +9,6 @@ import { HeroSection } from "@/components/HeroSection";
 import { InfoTiles } from "@/components/InfoTiles";
 import { LeaderboardSection } from "@/components/LeaderboardSection";
 import { Navbar } from "@/components/Navbar";
-import { RegistrationSection } from "@/components/RegistrationSection";
 import { siteConfigDefaults, type SiteConfig } from "@/lib/siteConfig";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -91,9 +90,8 @@ export default function HomePage() {
           <InfoTiles />
           <AboutSection />
         </section>
-        <RegistrationSection />
         <FixturesSection />
-        <LeaderboardSection />
+        <LeaderboardSection visible={siteConfig.leaderboard_visible === "true"} />
       </main>
       <Footer />
     </div>

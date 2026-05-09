@@ -66,6 +66,22 @@ export function InfoTiles() {
           if (tile.label === "Location") Icon = MapPin;
           else if (tile.label === "Prize Pool") Icon = Trophy;
           
+          if (tile.label === "Location") {
+            return (
+              <a
+                href="https://maps.app.goo.gl/rpeErqpzykEgey5c8"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="info-tile transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                key={tile.label}
+              >
+                <Icon size={44} className="mb-2 text-white" strokeWidth={1.5} />
+                <p className="info-tile-label">{tile.label}</p>
+                <p className="info-tile-value">{tile.value}</p>
+              </a>
+            );
+          }
+
           return (
             <article className="info-tile" key={tile.label}>
               <Icon size={44} className="mb-2 text-white" strokeWidth={1.5} />

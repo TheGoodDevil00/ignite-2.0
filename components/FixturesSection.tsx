@@ -2,13 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Shield } from "lucide-react";
-import {
-  fixtures as fallbackFixtures,
-  type FixtureStatus as BaseFixtureStatus,
-} from "@/lib/mockData";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
-type FixtureStatus = BaseFixtureStatus | "cancelled";
+type FixtureStatus = "upcoming" | "live" | "completed" | "cancelled";
 
 type Fixture = {
   id: number;
@@ -69,18 +65,6 @@ function normalizeScore(raw: RawFixture["match_scores"]) {
   return score ? `${score.home_score} - ${score.away_score}` : "-";
 }
 
-function fallbackRows(): Fixture[] {
-  return fallbackFixtures.map((fixture) => ({
-    id: fixture.id,
-    matchNumber: fixture.id,
-    teamA: fixture.teamA,
-    teamB: fixture.teamB,
-    time: fixture.time,
-    status: fixture.status,
-    score: fixture.score,
-  }));
-}
-
 function mapFixture(match: RawFixture): Fixture {
   const status = mapStatus(match.status);
   return {
@@ -98,7 +82,11 @@ function mapFixture(match: RawFixture): Fixture {
 
 export function FixturesSection() {
   const [filter, setFilter] = useState<FixtureStatus | "all">("all");
-  const [fixtures, setFixtures] = useState<Fixture[]>(fallbackRows);
+  const [fixtures, setFixtures] = useState<Fixture[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [noTeams, setNoTeams] = useState(false);
+
   const supabase = useMemo(
     () => (isSupabaseConfigured ? createClient() : null),
     []
@@ -111,31 +99,60 @@ export function FixturesSection() {
     let cancelled = false;
 
     async function loadFixtures() {
-      const { data } = await client
-        .from("matches")
-        .select(
-          `
-            id,
-            match_number,
-            status,
-            estimated_start,
-            is_bye,
-            home_team:teams!matches_home_team_id_fkey(name),
-            away_team:teams!matches_away_team_id_fkey(name),
-            bye_team:teams!matches_bye_team_id_fkey(name),
-            match_scores(home_score, away_score)
-          `
-        )
-        .order("estimated_start", { ascending: true, nullsFirst: false });
+      try {
+        const { count, error: countError } = await client
+          .from("teams")
+          .select("*", { count: "exact", head: true });
 
-      if (cancelled || !data) return;
-      setFixtures(((data ?? []) as unknown as RawFixture[]).map(mapFixture));
+        if (cancelled) return;
+        if (countError) throw countError;
+
+        if (count === 0) {
+          setNoTeams(true);
+          setLoading(false);
+          return;
+        }
+        setNoTeams(false);
+
+        const { data, error: matchError } = await client
+          .from("matches")
+          .select(
+            `
+              id,
+              match_number,
+              status,
+              estimated_start,
+              is_bye,
+              home_team:teams!matches_home_team_id_fkey(name),
+              away_team:teams!matches_away_team_id_fkey(name),
+              bye_team:teams!matches_bye_team_id_fkey(name),
+              match_scores(home_score, away_score)
+            `
+          )
+          .order("estimated_start", { ascending: true, nullsFirst: false });
+
+        if (cancelled) return;
+        if (matchError) throw matchError;
+
+        setFixtures(((data ?? []) as unknown as RawFixture[]).map(mapFixture));
+        setError(false);
+      } catch (err) {
+        console.error("Failed to load fixtures:", err);
+        setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
 
     loadFixtures();
 
     const channel = client
       .channel("public-fixtures")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "teams" },
+        () => loadFixtures()
+      )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "matches" },
@@ -182,61 +199,84 @@ export function FixturesSection() {
           ))}
         </div>
 
-        <div className="mx-auto grid max-w-4xl gap-3">
-          {filteredFixtures.map((fixture) => (
-            <div
-              key={fixture.id}
-              className="flex flex-col items-center gap-4 rounded-lg border border-subtle bg-card p-4 transition-colors hover:border-muted/30 sm:flex-row"
-            >
-              <div className="w-full shrink-0 text-center sm:w-48 sm:text-left">
-                <p className="text-sm font-bold uppercase text-white">
-                  Match {fixture.matchNumber < 10 ? `0${fixture.matchNumber}` : fixture.matchNumber}
-                </p>
-                <p className="mt-1 text-xs font-semibold uppercase text-muted">{fixture.time}</p>
-                <p className="mt-1 text-[10px] font-black uppercase text-muted">
-                  {statusLabels[fixture.status]}
-                </p>
-              </div>
+        {loading ? (
+          <div className="mx-auto grid max-w-4xl gap-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-28 w-full animate-pulse rounded-lg border border-subtle bg-card p-4 shadow-glass backdrop-blur" />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="mx-auto max-w-4xl text-center text-muted py-8">
+            Unable to load data
+          </div>
+        ) : noTeams ? (
+          <div className="mx-auto max-w-4xl text-center text-muted py-8">
+            Fixtures will be announced soon.
+          </div>
+        ) : (
+          <>
+            <div className="mx-auto grid max-w-4xl gap-3">
+              {filteredFixtures.map((fixture) => (
+                <div
+                  key={fixture.id}
+                  className="flex flex-col items-center gap-4 rounded-lg border border-subtle bg-card p-4 transition-colors hover:border-muted/30 sm:flex-row shadow-glass backdrop-blur"
+                >
+                  <div className="w-full shrink-0 text-center sm:w-48 sm:text-left">
+                    <p className="text-sm font-bold uppercase text-white">
+                      Match {fixture.matchNumber < 10 ? `0${fixture.matchNumber}` : fixture.matchNumber}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold uppercase text-muted">{fixture.time}</p>
+                    <p className="mt-1 text-[10px] font-black uppercase text-muted">
+                      {statusLabels[fixture.status]}
+                    </p>
+                  </div>
 
-              <div className="flex w-full flex-1 items-center justify-center gap-2 sm:gap-8">
-                <div className="flex flex-1 items-center justify-end gap-2 text-right">
-                  <span className="text-xs font-bold text-white sm:text-sm">{fixture.teamA}</span>
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-subtle bg-field text-muted">
-                    <Shield size={16} />
+                  <div className="flex w-full flex-1 items-center justify-center gap-2 sm:gap-8">
+                    <div className="flex flex-1 items-center justify-end gap-2 text-right">
+                      <span className="text-xs font-bold text-white sm:text-sm">{fixture.teamA}</span>
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-subtle bg-field text-muted">
+                        <Shield size={16} />
+                      </div>
+                    </div>
+
+                    <div className="flex w-16 shrink-0 items-center justify-center">
+                      {fixture.status === "live" ? (
+                        <span className="text-lg font-black text-accent">{fixture.score}</span>
+                      ) : fixture.status === "completed" ? (
+                        <span className="text-lg font-black text-white">{fixture.score}</span>
+                      ) : fixture.status === "cancelled" ? (
+                        <span className="text-xs font-black uppercase text-muted">Off</span>
+                      ) : (
+                        <span className="text-lg font-black text-accent">VS</span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-1 items-center justify-start gap-2 text-left">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-subtle bg-field text-muted">
+                        <Shield size={16} />
+                      </div>
+                      <span className="text-xs font-bold text-white sm:text-sm">{fixture.teamB}</span>
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex w-16 shrink-0 items-center justify-center">
-                  {fixture.status === "live" ? (
-                    <span className="text-lg font-black text-accent">{fixture.score}</span>
-                  ) : fixture.status === "completed" ? (
-                    <span className="text-lg font-black text-white">{fixture.score}</span>
-                  ) : fixture.status === "cancelled" ? (
-                    <span className="text-xs font-black uppercase text-muted">Off</span>
-                  ) : (
-                    <span className="text-lg font-black text-accent">VS</span>
-                  )}
-                </div>
-
-                <div className="flex flex-1 items-center justify-start gap-2 text-left">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-subtle bg-field text-muted">
-                    <Shield size={16} />
-                  </div>
-                  <span className="text-xs font-bold text-white sm:text-sm">{fixture.teamB}</span>
-                </div>
-              </div>
+              ))}
+              {filteredFixtures.length === 0 && fixtures.length > 0 && (
+                 <div className="text-center text-muted py-8">
+                   No {filter} matches found.
+                 </div>
+              )}
             </div>
-          ))}
-        </div>
 
-        <div className="mt-8 text-center">
-          <button
-            type="button"
-            className="rounded border border-subtle bg-field px-6 py-2 text-xs font-bold uppercase text-muted transition-colors hover:text-white"
-          >
-            View Full Fixtures
-          </button>
-        </div>
+            <div className="mt-8 text-center">
+              <button
+                type="button"
+                className="rounded border border-subtle bg-field px-6 py-2 text-xs font-bold uppercase text-muted transition-colors hover:text-white"
+              >
+                View Full Fixtures
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

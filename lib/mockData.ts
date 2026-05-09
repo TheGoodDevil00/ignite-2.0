@@ -30,12 +30,12 @@ export const navLinks = [
 export const infoTiles = [
   {
     label: "Date",
-    value: "25-30 May",
+    value: "26th July",
     image: "/images/calendar.png",
   },
   {
     label: "Location",
-    value: "Turf Dehu Road",
+    value: "Nawu Sports Club, Mamurdi",
     image: "/images/location.png",
   },
   {
