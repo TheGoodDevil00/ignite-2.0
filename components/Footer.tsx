@@ -1,8 +1,48 @@
+"use client";
+
 import { Camera, CirclePlay, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { navLinks, sponsors } from "@/lib/mockData";
+import { siteConfigDefaults } from "@/lib/siteConfig";
+import { createClient } from "@/lib/supabase/client";
 
 export function Footer() {
+  const [whatsappLink, setWhatsappLink] = useState(siteConfigDefaults.whatsapp_link);
+  const supabase = useMemo(() => createClient(), []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWhatsappLink() {
+      const { data } = await supabase
+        .from("site_config")
+        .select("value")
+        .eq("key", "whatsapp_link")
+        .maybeSingle();
+
+      if (!cancelled && data?.value) {
+        setWhatsappLink(data.value);
+      }
+    }
+
+    loadWhatsappLink();
+
+    const channel = supabase
+      .channel("public-footer-config")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_config", filter: "key=eq.whatsapp_link" },
+        () => loadWhatsappLink()
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
   return (
     <footer id="contact" className="bg-section">
       <div className="section-container py-14">
@@ -17,7 +57,7 @@ export function Footer() {
                 <p className="mt-1 text-sm text-muted">Join our community</p>
               </div>
             </div>
-            <a className="whatsapp-button mt-6 inline-flex items-center gap-2" href="https://wa.me/">
+            <a className="whatsapp-button mt-6 inline-flex items-center gap-2" href={whatsappLink}>
               <MessageCircle aria-hidden="true" size={18} />
               Join WhatsApp Group
             </a>
