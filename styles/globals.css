@@ -1,16 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
- @layer utilities {
-   .no-scrollbar::-webkit-scrollbar {
-     display: none;
-   }
-   .no-scrollbar {
-     -ms-overflow-style: none;
-     scrollbar-width: none;
-   }
- }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
 
 :root {
   --color-bg-primary: #050810;
@@ -96,10 +97,10 @@ a {
     pointer-events: none;
     background:
       radial-gradient(circle at 50% 36%, rgba(232, 0, 29, 0.2), transparent 34rem),
-      linear-gradient(to bottom, transparent 65%, var(--color-bg-section));
+      linear-gradient(to bottom, transparent 82%, var(--color-bg-section));
   }
 
-  .intro-section > * {
+  .intro-section>* {
     position: relative;
     z-index: 1;
   }
@@ -295,7 +296,7 @@ a {
   }
 
   .countdown-logo {
-    @apply mb-5 rounded-full shadow-glow;
+    @apply mb-5;
   }
 
   .countdown-kicker {
@@ -343,12 +344,11 @@ a {
   /* ── Hero row: text + bleed image ────────────────────────────── */
 
   .about-hero-row {
-    @apply relative grid gap-6 md:grid-cols-2 md:gap-0;
-    min-height: 340px;
+    @apply grid gap-6 md:grid-cols-2 md:items-center md:gap-10;
   }
 
   .about-hero-text {
-    @apply relative z-10 flex flex-col justify-center md:pr-10 lg:pr-16;
+    @apply flex flex-col justify-center;
   }
 
   .about-heading {
@@ -360,46 +360,25 @@ a {
   }
 
   .about-hero-image {
-    @apply relative overflow-hidden rounded-2xl md:rounded-l-none md:rounded-r-2xl;
-    min-height: 280px;
-  }
-
-  @media (min-width: 768px) {
-    .about-hero-image {
-      position: absolute;
-      right: -1.5rem;
-      top: -1rem;
-      bottom: -1rem;
-      width: 54%;
-      border-radius: 1rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .about-hero-image {
-      right: -2rem;
-    }
+    @apply relative overflow-hidden rounded-2xl;
+    aspect-ratio: 16 / 16;
   }
 
   .about-hero-image-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(5, 8, 16, 0.7) 0%,
-      rgba(5, 8, 16, 0.15) 60%,
-      transparent 100%
-    );
+    background: linear-gradient(135deg,
+        rgba(5, 8, 16, 0.5) 0%,
+        rgba(5, 8, 16, 0.1) 50%,
+        transparent 100%);
     pointer-events: none;
   }
 
   @media (max-width: 767px) {
     .about-hero-image-overlay {
-      background: linear-gradient(
-        to top,
-        rgba(5, 8, 16, 0.55) 0%,
-        transparent 100%
-      );
+      background: linear-gradient(to top,
+          rgba(5, 8, 16, 0.55) 0%,
+          transparent 100%);
     }
   }
 
@@ -421,7 +400,7 @@ a {
     @apply text-sm leading-relaxed text-muted sm:text-base;
   }
 
-  .about-body-paragraph + .about-body-paragraph {
+  .about-body-paragraph+.about-body-paragraph {
     @apply mt-4;
   }
 
@@ -446,7 +425,7 @@ a {
   .about-carousel-slide {
     @apply relative flex-none snap-start;
     width: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 16;
   }
 
   .about-carousel-arrow {
@@ -522,6 +501,7 @@ a {
     opacity: 0.3;
     transform: scale(0.95);
   }
+
   to {
     opacity: 0.5;
     transform: scale(1.05);
@@ -529,6 +509,7 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

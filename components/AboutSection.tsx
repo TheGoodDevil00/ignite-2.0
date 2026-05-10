@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
@@ -42,13 +42,12 @@ function EventCarousel({ images }: { images: string[] }) {
   /* scroll to a specific slide */
   const goTo = useCallback(
     (idx: number) => {
+      const track = trackRef.current;
+      if (!track) return;
       const next = ((idx % total) + total) % total;
       setActive(next);
-      trackRef.current?.children[next]?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "start",
-      });
+      const slideWidth = track.clientWidth;
+      track.scrollTo({ left: slideWidth * next, behavior: "smooth" });
     },
     [total]
   );
@@ -115,7 +114,7 @@ function EventCarousel({ images }: { images: string[] }) {
               alt={filenameToAlt(file)}
               fill
               sizes="(max-width: 768px) 100vw, 56vw"
-              className="object-cover"
+              className="object-cover object-top"
               loading="lazy"
             />
           </div>
@@ -170,14 +169,11 @@ function TestimonialQuote({
   testimonial: Testimonial;
   align: "left" | "right";
 }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-
   return (
     <motion.blockquote
-      ref={ref}
       initial={{ opacity: 0, x: align === "left" ? -30 : 30 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       className={`about-testimonial ${align === "right" ? "about-testimonial--right" : ""}`}
     >
@@ -197,8 +193,6 @@ function TestimonialQuote({
 /* ------------------------------------------------------------------ */
 export function AboutSection() {
   const [data, setData] = useState<AboutData | null>(null);
-  const sectionRef = useRef(null);
-  const headingInView = useInView(sectionRef, { once: true, margin: "-80px" });
 
   useEffect(() => {
     fetch("/api/about-data")
@@ -230,17 +224,18 @@ export function AboutSection() {
 
   /* Pick a hero bleed image (first image) and carousel images */
   const heroImage = imageFiles[0] ?? null;
-  const carouselImages = imageFiles;
+  const carouselImages = imageFiles.slice(1);
 
   return (
     <section id="about" className="about-section">
       {/* ─── Hero row: large lead text + bleed image ─── */}
-      <div ref={sectionRef} className="about-hero-row">
+      <div className="about-hero-row">
         {/* Text column */}
         <motion.div
           className="about-hero-text"
           initial={{ opacity: 0, y: 32 }}
-          animate={headingInView ? { opacity: 1, y: 0 } : {}}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
           <h2 className="about-heading">
@@ -255,7 +250,8 @@ export function AboutSection() {
           <motion.div
             className="about-hero-image"
             initial={{ opacity: 0, scale: 0.97 }}
-            animate={headingInView ? { opacity: 1, scale: 1 } : {}}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
           >
             <Image
@@ -263,7 +259,7 @@ export function AboutSection() {
               alt={filenameToAlt(heroImage)}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
+              className="object-cover object-top"
               priority
             />
             {/* overlay gradient for text readability */}
@@ -299,3 +295,4 @@ export function AboutSection() {
     </section>
   );
 }
+

@@ -89,9 +89,9 @@ export default function HomePage() {
           <HeroSection />
           <InfoTiles />
         </section>
-        <AboutSection />
         <FixturesSection />
         <LeaderboardSection visible={siteConfig.leaderboard_visible === "true"} />
+        <AboutSection />
       </main>
       <Footer />
     </div>

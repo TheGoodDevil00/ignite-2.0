@@ -47,7 +47,7 @@ const controls = [
     key: "fillout_link",
     label: "Registration Form Link",
     type: "url",
-    help: "Paste your Fillout form URL here. This powers the JOIN NOW button site-wide. Leave empty to hide the button.",
+    help: "Paste your Fillout form URL here. This powers the REGISTER NOW button site-wide. Leave empty to hide the button.",
   },
   {
     key: "leaderboard_visible",

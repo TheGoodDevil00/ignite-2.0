@@ -138,7 +138,7 @@ export function CountdownScreen({
             rel="noopener noreferrer"
             style={{ marginBottom: "-1rem" }}
           >
-            JOIN NOW
+            REGISTER NOW
           </a>
         ) : null}
 

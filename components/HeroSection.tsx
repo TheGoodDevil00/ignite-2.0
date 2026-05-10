@@ -89,7 +89,7 @@ export function HeroSection() {
         <div className="mt-8 flex w-full max-w-[320px] flex-wrap justify-center gap-1.5 sm:max-w-xl sm:gap-4">
           {filloutLink ? (
             <a className="glass-button" href={filloutLink} target="_blank" rel="noopener noreferrer">
-              JOIN NOW
+              REGISTER NOW
             </a>
           ) : null}
           {defaultButtonLinks.map((button) => (
