@@ -114,21 +114,74 @@ export function ExportPdfButton() {
         return a.name.localeCompare(b.name);
       });
 
-      // 2. Group Fixtures by Round
-      const matchesByRound: Record<string, typeof matchesData> = {};
+      // 2. Group Fixtures and Results separately
+      const fixturesByRound: Record<string, typeof matchesData> = {};
+      const resultsByRound: Record<string, typeof matchesData> = {};
+
       for (const m of matchesData || []) {
         // @ts-ignore
         const roundName = m.rounds?.name || `Round ${m.round_id}`;
-        if (!matchesByRound[roundName]) {
-          matchesByRound[roundName] = [];
+        if (m.status === "completed") {
+          if (!resultsByRound[roundName]) resultsByRound[roundName] = [];
+          resultsByRound[roundName].push(m);
+        } else {
+          if (!fixturesByRound[roundName]) fixturesByRound[roundName] = [];
+          fixturesByRound[roundName].push(m);
         }
-        matchesByRound[roundName].push(m);
       }
 
       const getTeamName = (id: number | null) => {
         if (!id) return "TBD";
         const t = teamsData?.find((t) => t.id === id);
         return t ? t.name : "TBD";
+      };
+
+      const formatTime = (isoString: string | null) => {
+        if (!isoString) return "TBD";
+        const d = new Date(isoString);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '\n' + d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      };
+
+      const buildMatchTables = (groupedMatches: Record<string, typeof matchesData>) => {
+        return Object.entries(groupedMatches).flatMap(([roundName, matches]) => [
+          { text: roundName, style: "roundHeader" } as any,
+          {
+            table: {
+              headerRows: 1,
+              widths: ["auto", "*", "auto", "auto", "auto", "*", "auto"],
+              body: [
+                [
+                  { text: "Time", style: "tableHeader", alignment: "center" as const },
+                  { text: "Home Team", style: "tableHeader", alignment: "right" as const },
+                  { text: "Score", style: "tableHeader", alignment: "center" as const },
+                  { text: "vs", style: "tableHeader", alignment: "center" as const },
+                  { text: "Score", style: "tableHeader", alignment: "center" as const },
+                  { text: "Away Team", style: "tableHeader" },
+                  { text: "Status", style: "tableHeader", alignment: "center" as const },
+                ],
+                ...matches.map((m) => {
+                  const homeTeam = getTeamName(m.home_team_id);
+                  const awayTeam = getTeamName(m.away_team_id);
+                  const scores = Array.isArray(m.match_scores)
+                    ? m.match_scores[0]
+                    : m.match_scores;
+                  const homeScore = scores ? scores.home_score : "-";
+                  const awayScore = scores ? scores.away_score : "-";
+                  return [
+                    { text: formatTime(m.estimated_start), alignment: "center" as const, fontSize: 9 },
+                    { text: homeTeam, alignment: "right" as const },
+                    { text: String(homeScore), alignment: "center" as const, bold: true },
+                    { text: "-", alignment: "center" as const },
+                    { text: String(awayScore), alignment: "center" as const, bold: true },
+                    { text: awayTeam },
+                    { text: m.status, alignment: "center" as const, fontSize: 9 },
+                  ];
+                }),
+              ],
+            },
+            margin: [0, 0, 0, 15] as [number, number, number, number],
+          } as any,
+        ]);
       };
 
       // 3. Build Document Definition
@@ -184,44 +237,11 @@ export function ExportPdfButton() {
               ],
             },
           },
-          { text: "Fixtures & Results", style: "subheader", margin: [0, 30, 0, 10] },
-          ...Object.entries(matchesByRound).flatMap(([roundName, matches]) => [
-            { text: roundName, style: "roundHeader" } as any,
-            {
-              table: {
-                headerRows: 1,
-                widths: ["*", "auto", "auto", "auto", "*", "auto"],
-                body: [
-                  [
-                    { text: "Home Team", style: "tableHeader", alignment: "right" as const },
-                    { text: "Score", style: "tableHeader", alignment: "center" as const },
-                    { text: "vs", style: "tableHeader", alignment: "center" as const },
-                    { text: "Score", style: "tableHeader", alignment: "center" as const },
-                    { text: "Away Team", style: "tableHeader" },
-                    { text: "Status", style: "tableHeader", alignment: "center" as const },
-                  ],
-                  ...matches.map((m) => {
-                    const homeTeam = getTeamName(m.home_team_id);
-                    const awayTeam = getTeamName(m.away_team_id);
-                    const scores = Array.isArray(m.match_scores)
-                      ? m.match_scores[0]
-                      : m.match_scores;
-                    const homeScore = scores ? scores.home_score : "-";
-                    const awayScore = scores ? scores.away_score : "-";
-                    return [
-                      { text: homeTeam, alignment: "right" as const },
-                      { text: String(homeScore), alignment: "center" as const, bold: true },
-                      { text: "-", alignment: "center" as const },
-                      { text: String(awayScore), alignment: "center" as const, bold: true },
-                      { text: awayTeam },
-                      { text: m.status, alignment: "center" as const, fontSize: 9 },
-                    ];
-                  }),
-                ],
-              },
-              margin: [0, 0, 0, 15] as [number, number, number, number],
-            } as any,
-          ]),
+          { text: "Completed Results", style: "subheader", margin: [0, 30, 0, 10] },
+          ...(Object.keys(resultsByRound).length > 0 ? buildMatchTables(resultsByRound) : [{ text: "No results yet.", style: { italics: true, color: "gray" as const }, margin: [0, 0, 0, 15] as [number, number, number, number] } as any]),
+          
+          { text: "Upcoming Fixtures", style: "header", pageBreak: "before" as const },
+          ...(Object.keys(fixturesByRound).length > 0 ? buildMatchTables(fixturesByRound) : [{ text: "No upcoming fixtures.", style: { italics: true, color: "gray" as const }, margin: [0, 0, 0, 15] as [number, number, number, number] } as any]),
         ],
         styles: {
           header: {
