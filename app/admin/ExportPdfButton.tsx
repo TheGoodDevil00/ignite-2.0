@@ -239,8 +239,8 @@ export function ExportPdfButton() {
           },
           { text: "Completed Results", style: "subheader", margin: [0, 30, 0, 10] },
           ...(Object.keys(resultsByRound).length > 0 ? buildMatchTables(resultsByRound) : [{ text: "No results yet.", style: { italics: true, color: "gray" as const }, margin: [0, 0, 0, 15] as [number, number, number, number] } as any]),
-          
-          { text: "Upcoming Fixtures", style: "header", pageBreak: "before" as const },
+
+          { text: "Fixtures", style: "header", pageBreak: "before" as const },
           ...(Object.keys(fixturesByRound).length > 0 ? buildMatchTables(fixturesByRound) : [{ text: "No upcoming fixtures.", style: { italics: true, color: "gray" as const }, margin: [0, 0, 0, 15] as [number, number, number, number] } as any]),
         ],
         styles: {
