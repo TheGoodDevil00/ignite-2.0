@@ -519,3 +519,74 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Sponsors Infinite Scrolling Marquee ────────────────────────── */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-container {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  background: linear-gradient(90deg, rgba(232, 0, 29, 0.03) 0%, rgba(232, 0, 29, 0.08) 50%, rgba(232, 0, 29, 0.03) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem 0;
+  position: relative;
+  
+  /* Modern CSS Mask for premium transparent fade-out edges */
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+.marquee-content {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4rem;
+  align-items: center;
+  justify-content: space-around;
+  min-width: 100%;
+  animation: marquee 50s linear infinite;
+}
+
+/* Pause scroll on hover for improved UX */
+.marquee-container:hover .marquee-content {
+  animation-play-state: paused;
+}
+
+.marquee-item {
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  transition: opacity 0.3s, color 0.3s, transform 0.3s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  cursor: default;
+}
+
+.marquee-item:hover {
+  opacity: 1;
+  color: var(--color-accent-red);
+  transform: scale(1.05);
+}
+
+.marquee-separator {
+  color: var(--color-accent-red);
+  font-size: 1.25rem;
+  opacity: 0.9;
+  font-weight: 900;
+  margin-left: 4rem;
+}

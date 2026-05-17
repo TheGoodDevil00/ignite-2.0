@@ -117,4 +117,19 @@ export const leaderboard: LeaderboardRow[] = [
   { rank: 6, team: "Goal Diggers", played: 3, won: 0, drawn: 1, lost: 2, points: 1 },
 ];
 
-export const sponsors = ["Red Bull", "Monster", "Decathlon"];
+export const sponsors = [
+  "Red Bull",
+  "Monster Energy",
+  "Decathlon",
+  "Nike",
+  "Adidas",
+  "Puma",
+  "Gatorade",
+  "Under Armour",
+  "Cosco",
+  "Nivia",
+  "Yonex",
+  "Powerade",
+  "Oakley",
+  "Castrol"
+];
