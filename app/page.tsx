@@ -10,18 +10,17 @@ import { InfoTiles } from "@/components/InfoTiles";
 import { LeaderboardSection } from "@/components/LeaderboardSection";
 import { Navbar } from "@/components/Navbar";
 import { SponsorsTicker } from "@/components/SponsorsTicker";
-import { siteConfigDefaults, type SiteConfig } from "@/lib/siteConfig";
+import { isEnabled, mergeSiteConfig, siteConfigDefaults, type SiteConfig } from "@/lib/siteConfig";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 const SITE_UNLOCKED = process.env.NEXT_PUBLIC_SITE_UNLOCKED === "true";
 
 export default function HomePage() {
   const [manualUnlock, setManualUnlock] = useState(SITE_UNLOCKED);
-  const [siteConfig, setSiteConfig] = useState<SiteConfig>({
-    ...siteConfigDefaults,
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>(mergeSiteConfig({
     site_locked: SITE_UNLOCKED ? "false" : siteConfigDefaults.site_locked,
     unlock_date: process.env.NEXT_PUBLIC_UNLOCK_DATE ?? siteConfigDefaults.unlock_date,
-  });
+  }));
   const supabase = useMemo(
     () => (isSupabaseConfigured ? createClient() : null),
     []
@@ -37,10 +36,12 @@ export default function HomePage() {
       const { data } = await client.from("site_config").select("key,value");
       if (cancelled || !data) return;
 
-      setSiteConfig((current) => ({
-        ...current,
-        ...Object.fromEntries(data.map((row) => [row.key, row.value])),
-      }));
+      setSiteConfig((current) =>
+        mergeSiteConfig({
+          ...current,
+          ...Object.fromEntries(data.map((row) => [row.key, row.value])),
+        })
+      );
     }
 
     loadConfig();
@@ -71,6 +72,7 @@ export default function HomePage() {
     return (
       <CountdownScreen
         unlockDate={unlockDate}
+        config={siteConfig}
         onComplete={() => setManualUnlock(true)}
         onUnlockNow={() => setManualUnlock(true)}
       />
@@ -79,7 +81,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-primary text-text">
-      <Navbar />
+      <Navbar config={siteConfig} />
       {siteConfig.announcement_banner ? (
         <div className="border-b border-subtle bg-accent px-4 py-2 text-center text-xs font-black uppercase text-white">
           {siteConfig.announcement_banner}
@@ -87,15 +89,19 @@ export default function HomePage() {
       ) : null}
       <main>
         <section className="intro-section">
-          <HeroSection />
-          <InfoTiles />
+          <HeroSection config={siteConfig} />
+          <InfoTiles config={siteConfig} />
         </section>
-        <SponsorsTicker />
-        <FixturesSection />
-        <LeaderboardSection visible={siteConfig.leaderboard_visible === "true"} />
-        <AboutSection />
+        {isEnabled(siteConfig.sponsors_visible, true) ? (
+          <SponsorsTicker config={siteConfig} />
+        ) : null}
+        {isEnabled(siteConfig.fixtures_visible, true) ? <FixturesSection /> : null}
+        <LeaderboardSection visible={isEnabled(siteConfig.leaderboard_visible)} />
+        {isEnabled(siteConfig.about_visible, true) ? (
+          <AboutSection config={siteConfig} />
+        ) : null}
       </main>
-      <Footer />
+      <Footer config={siteConfig} />
     </div>
   );
 }

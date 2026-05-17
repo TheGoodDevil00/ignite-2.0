@@ -1,26 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
+import { mergeSiteConfig } from "@/lib/siteConfig";
 import { ConfigAdminClient, type ConfigMap } from "./ConfigAdminClient";
 
 export const dynamic = "force-dynamic";
 
-const defaults: ConfigMap = {
-  site_locked: "true",
-  unlock_date: "2026-05-15T18:00:00+05:30",
-  event_date_display: "25-30 May",
-  whatsapp_link: "https://wa.me/",
-  announcement_banner: "",
-  prize_pool: "Rs 4500",
-  fillout_link: "",
-  leaderboard_visible: "false",
-};
-
 export default async function AdminConfigPage() {
   const supabase = await createClient();
   const { data } = await supabase.from("site_config").select("key,value");
-  const config = {
-    ...defaults,
-    ...Object.fromEntries((data ?? []).map((row) => [row.key, row.value])),
-  };
+  const config = mergeSiteConfig(
+    Object.fromEntries((data ?? []).map((row) => [row.key, row.value]))
+  ) satisfies ConfigMap;
 
   return (
     <div className="space-y-6">

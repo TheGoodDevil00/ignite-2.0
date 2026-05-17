@@ -49,11 +49,11 @@ export function useAdminSession() {
 
       if (cancelled) return;
 
-      if (profileError || currentProfile?.role !== "admin") {
+      if (profileError || !["admin", "scorer"].includes(currentProfile?.role ?? "")) {
         await supabase.auth.signOut();
         setUser(null);
         setProfile(null);
-        setError(profileError?.message ?? "Admin access is required.");
+        setError(profileError?.message ?? "Admin or scorer access is required.");
       } else {
         setUser(currentUser);
         setProfile(currentProfile);

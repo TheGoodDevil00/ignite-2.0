@@ -28,6 +28,11 @@ function normalizeScore(raw: RawFixture["match_scores"]) {
 
 export default async function AdminFixturesPage() {
   const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims.sub;
+  const { data: profile } = userId
+    ? await supabase.from("profiles").select("role").eq("id", userId).maybeSingle()
+    : { data: null };
   const { data, error } = await supabase
     .from("matches")
     .select(
@@ -75,7 +80,7 @@ export default async function AdminFixturesPage() {
         <h1 className="mt-2 text-3xl font-black uppercase text-white">Fixtures</h1>
       </div>
 
-      <RunFixtureGeneratorButton />
+      {profile?.role === "admin" ? <RunFixtureGeneratorButton /> : null}
       <FixturesAdminClient fixtures={fixtures} />
     </div>
   );

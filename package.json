@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "auth:users": "tsx scripts/ensureAuthUsers.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

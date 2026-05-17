@@ -14,6 +14,22 @@ function redirectToLogin(request: NextRequest) {
   return NextResponse.redirect(url);
 }
 
+function redirectToScorerHome(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/admin/fixtures";
+  url.search = "";
+  return NextResponse.redirect(url);
+}
+
+function isScorerRoute(pathname: string) {
+  return (
+    pathname === "/admin/fixtures" ||
+    pathname.startsWith("/admin/fixtures/") ||
+    pathname === "/admin/scores" ||
+    pathname.startsWith("/admin/scores/")
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request: {
@@ -67,9 +83,17 @@ export async function updateSession(request: NextRequest) {
     .eq("id", userId)
     .maybeSingle();
 
-  if (profile?.role !== "admin") {
-    return redirectToLogin(request);
+  if (profile?.role === "admin") {
+    return supabaseResponse;
   }
 
-  return supabaseResponse;
+  if (profile?.role === "scorer" && isScorerRoute(request.nextUrl.pathname)) {
+    return supabaseResponse;
+  }
+
+  if (profile?.role === "scorer") {
+    return redirectToScorerHome(request);
+  }
+
+  return redirectToLogin(request);
 }

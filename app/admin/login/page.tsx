@@ -8,6 +8,31 @@ import { createClient } from "@/lib/supabase/client";
 
 const ADMIN_USERNAME = "admin";
 const ADMIN_EMAIL = "admin@ignite.local";
+const SCORER_USERNAME = "scorer";
+const SCORER_EMAIL = "scorer@ignite.local";
+
+function getLoginEmail(identifier: string) {
+  const normalized = identifier.trim().toLowerCase();
+
+  if (normalized === ADMIN_USERNAME) return ADMIN_EMAIL;
+  if (normalized === SCORER_USERNAME) return SCORER_EMAIL;
+
+  return identifier.trim();
+}
+
+function getAllowedRedirect(role: string | undefined, redirectedFrom: string | null) {
+  const fallback = role === "scorer" ? "/admin/fixtures" : "/admin";
+
+  if (!redirectedFrom?.startsWith("/admin")) return fallback;
+  if (role === "scorer") {
+    return redirectedFrom.startsWith("/admin/fixtures") ||
+      redirectedFrom.startsWith("/admin/scores")
+      ? redirectedFrom
+      : fallback;
+  }
+
+  return redirectedFrom;
+}
 
 function AdminLoginForm() {
   const router = useRouter();
@@ -23,10 +48,7 @@ function AdminLoginForm() {
     const formData = new FormData(event.currentTarget);
     const identifier = String(formData.get("identifier") ?? "").trim();
     const password = String(formData.get("password") ?? "");
-    const email =
-      identifier.toLowerCase() === ADMIN_USERNAME
-        ? ADMIN_EMAIL
-        : identifier;
+    const email = getLoginEmail(identifier);
     const supabase = createClient();
 
     const { error: loginError } = await supabase.auth.signInWithPassword({
@@ -50,15 +72,17 @@ function AdminLoginForm() {
       .eq("id", user?.id ?? "")
       .maybeSingle();
 
-    if (profileError || profile?.role !== "admin") {
+    const role = profile?.role;
+
+    if (profileError || !["admin", "scorer"].includes(role ?? "")) {
       await supabase.auth.signOut();
-      setError("This account is not an IGNITE admin.");
+      setError("This account is not an IGNITE admin or scorer.");
       setLoading(false);
       return;
     }
 
     const redirectedFrom = searchParams.get("redirectedFrom");
-    router.replace(redirectedFrom?.startsWith("/admin") ? redirectedFrom : "/admin");
+    router.replace(getAllowedRedirect(role, redirectedFrom));
     router.refresh();
   }
 

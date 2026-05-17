@@ -8,6 +8,8 @@ import type { MatchStatus } from "@/lib/supabase/types";
 
 const ADMIN_USERNAME = "admin";
 const ADMIN_EMAIL = "admin@ignite.local";
+const SCORER_USERNAME = "scorer";
+const SCORER_EMAIL = "scorer@ignite.local";
 
 type ActionResult = {
   ok: boolean;
@@ -43,10 +45,36 @@ async function requireAdmin() {
   return { supabase, userId };
 }
 
+async function requireAdminOrScorer() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+  const userId = data?.claims.sub;
+
+  if (error || !userId) {
+    redirect("/admin/login");
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  if (profileError || !["admin", "scorer"].includes(profile.role)) {
+    await supabase.auth.signOut();
+    redirect("/admin/login");
+  }
+
+  return { supabase, userId, role: profile.role };
+}
+
 function getAdminEmail(identifier: string) {
-  return identifier.trim().toLowerCase() === ADMIN_USERNAME
-    ? ADMIN_EMAIL
-    : identifier.trim();
+  const normalized = identifier.trim().toLowerCase();
+
+  if (normalized === ADMIN_USERNAME) return ADMIN_EMAIL;
+  if (normalized === SCORER_USERNAME) return SCORER_EMAIL;
+
+  return identifier.trim();
 }
 
 export async function logoutAction() {
@@ -64,7 +92,7 @@ export async function updateMatchDetails(
     status: MatchStatus;
   }
 ): Promise<ActionResult> {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminOrScorer();
   const estimatedStart = values.estimatedStart
     ? new Date(values.estimatedStart).toISOString()
     : null;
@@ -92,7 +120,7 @@ export async function saveMatchScore(
   homeScore: number,
   awayScore: number
 ): Promise<ActionResult> {
-  const { supabase, userId } = await requireAdmin();
+  const { supabase, userId } = await requireAdminOrScorer();
 
   const { error: scoreError } = await supabase.from("match_scores").upsert(
     {

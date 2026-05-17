@@ -29,7 +29,7 @@ type StatDeltaPayload = {
   delta: number;
 };
 
-async function requireAdminProfile() {
+async function requireScorekeeperProfile() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
   const userId = data?.claims.sub;
@@ -44,12 +44,26 @@ async function requireAdminProfile() {
     .eq("id", userId)
     .single();
 
-  if (profileError || profile?.role !== "admin") {
+  if (profileError || !["admin", "scorer"].includes(profile?.role ?? "")) {
     await supabase.auth.signOut();
     redirect("/admin/login");
   }
 
-  return { supabase, userId };
+  return { supabase, userId, role: profile.role };
+}
+
+async function canScoreMatch(matchId: number, userId: string, role: string) {
+  if (role === "admin") return true;
+
+  const service = createServiceRoleClient();
+  const { data, error } = await service
+    .from("matches")
+    .select("scorer_id")
+    .eq("id", matchId)
+    .single();
+
+  if (error) return false;
+  return !data.scorer_id || data.scorer_id === userId;
 }
 
 function parsePositiveInteger(value: number, label: string) {
@@ -103,7 +117,12 @@ export async function updatePlayerMatchStat(
     return { ok: false, message: "Stat delta must be a non-zero integer." };
   }
 
-  const { userId } = await requireAdminProfile();
+  const { userId, role } = await requireScorekeeperProfile();
+
+  if (!(await canScoreMatch(matchId, userId, role))) {
+    return { ok: false, message: "This scorer is not assigned to this match." };
+  }
+
   const service = createServiceRoleClient();
   const { data, error } = await service.rpc("apply_player_match_stat_delta", {
     p_match_id: matchId,
@@ -159,7 +178,7 @@ export async function markMatchLive(matchIdValue: number): Promise<ScoringAction
     };
   }
 
-  const { supabase } = await requireAdminProfile();
+  const { supabase } = await requireScorekeeperProfile();
   const { data, error } = await supabase
     .from("matches")
     .update({ status: "live" })
@@ -207,7 +226,7 @@ export async function completeMatch(
     };
   }
 
-  const { supabase } = await requireAdminProfile();
+  const { supabase, userId, role } = await requireScorekeeperProfile();
   const { data: match, error: matchError } = await supabase
     .from("matches")
     .select("home_team_id, away_team_id, status")
@@ -224,6 +243,10 @@ export async function completeMatch(
 
   if (winnerId !== match.home_team_id && winnerId !== match.away_team_id) {
     return { ok: false, message: "Winner must be one of the match teams." };
+  }
+
+  if (!(await canScoreMatch(matchId, userId, role))) {
+    return { ok: false, message: "This scorer is not assigned to this match." };
   }
 
   try {

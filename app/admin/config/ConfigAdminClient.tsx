@@ -7,6 +7,27 @@ import { resetTournamentData, updateConfigValue } from "@/app/admin/actions";
 export type ConfigMap = Record<string, string>;
 
 const controls = [
+  { key: "site_title", label: "Site Title", type: "text", help: "" },
+  { key: "site_description", label: "Site Description", type: "textarea", help: "" },
+  { key: "organizer_name", label: "Organizer Name", type: "text", help: "" },
+  {
+    key: "mgocsm_logo_url",
+    label: "Organizer Logo URL",
+    type: "text",
+    help: "Use a local public path like /icons/logo.png or an absolute image URL.",
+  },
+  {
+    key: "ignite_logo_url",
+    label: "Event Logo URL",
+    type: "text",
+    help: "Use a local public path or an absolute image URL.",
+  },
+  {
+    key: "nav_links",
+    label: "Navigation Links",
+    type: "textarea",
+    help: 'JSON array, for example [{"label":"Home","href":"#home"}].',
+  },
   {
     key: "site_locked",
     label: "Site Locked",
@@ -26,17 +47,26 @@ const controls = [
     help: "",
   },
   {
-    key: "whatsapp_link",
-    label: "WhatsApp Link",
-    type: "url",
-    help: "",
-  },
-  {
     key: "announcement_banner",
     label: "Announcement Banner",
     type: "text",
     help: "",
   },
+  { key: "register_button_label", label: "Register Button Label", type: "text", help: "" },
+  { key: "hero_tagline", label: "Hero Tagline", type: "text", help: "" },
+  { key: "hero_tagline_accent", label: "Hero Tagline Accent", type: "text", help: "" },
+  { key: "hero_subtitle", label: "Hero Subtitle", type: "text", help: "" },
+  {
+    key: "hero_buttons",
+    label: "Hero Buttons",
+    type: "textarea",
+    help: 'JSON array of secondary buttons, for example [{"label":"Live Score","href":"#fixtures"}].',
+  },
+  { key: "event_date_label", label: "Date Tile Label", type: "text", help: "" },
+  { key: "location_label", label: "Location Tile Label", type: "text", help: "" },
+  { key: "location_display", label: "Location Display", type: "text", help: "" },
+  { key: "location_link", label: "Location Link", type: "url", help: "" },
+  { key: "prize_pool_label", label: "Prize Tile Label", type: "text", help: "" },
   {
     key: "prize_pool",
     label: "Prize Pool",
@@ -55,6 +85,67 @@ const controls = [
     type: "toggle",
     help: "When off, the leaderboard section is completely hidden and surrounding sections reflow automatically.",
   },
+  { key: "fixtures_visible", label: "Show Fixtures on Homepage", type: "toggle", help: "" },
+  { key: "sponsors_visible", label: "Show Sponsors on Homepage", type: "toggle", help: "" },
+  { key: "about_visible", label: "Show About on Homepage", type: "toggle", help: "" },
+  {
+    key: "sponsors",
+    label: "Sponsors",
+    type: "textarea",
+    help: "JSON array or one sponsor per line.",
+  },
+  { key: "countdown_date_label", label: "Countdown Date Label", type: "text", help: "" },
+  { key: "countdown_kicker", label: "Countdown Kicker", type: "text", help: "" },
+  { key: "countdown_title", label: "Countdown Title", type: "text", help: "" },
+  { key: "countdown_label", label: "Countdown Timer Label", type: "text", help: "" },
+  {
+    key: "countdown_manual_unlock_visible",
+    label: "Show Manual Unlock Button",
+    type: "toggle",
+    help: "",
+  },
+  {
+    key: "countdown_manual_unlock_label",
+    label: "Manual Unlock Button Label",
+    type: "text",
+    help: "",
+  },
+  { key: "countdown_admin_label", label: "Countdown Admin Button Label", type: "text", help: "" },
+  { key: "about_heading", label: "About Heading", type: "text", help: "" },
+  {
+    key: "about_text",
+    label: "About Text",
+    type: "textarea",
+    help: "Separate paragraphs with a blank line.",
+  },
+  {
+    key: "about_images",
+    label: "About Images",
+    type: "textarea",
+    help: "JSON array or one image path per line. Local filenames are read from /events.",
+  },
+  {
+    key: "about_testimonials",
+    label: "About Testimonials",
+    type: "textarea",
+    help: 'JSON array, for example [{"name":"Name","body":"Quote"}].',
+  },
+  { key: "footer_tagline", label: "Footer Tagline", type: "text", help: "" },
+  {
+    key: "footer_contacts",
+    label: "Footer Contacts",
+    type: "textarea",
+    help: "JSON array with label, name, and phone fields.",
+  },
+  {
+    key: "footer_social_links",
+    label: "Footer Social Links",
+    type: "textarea",
+    help: 'JSON array, for example [{"label":"Instagram","href":"https://..."}].',
+  },
+  { key: "footer_copyright", label: "Footer Copyright", type: "text", help: "" },
+  { key: "footer_credit_label", label: "Footer Credit Label", type: "text", help: "" },
+  { key: "footer_credit_url", label: "Footer Credit URL", type: "url", help: "" },
 ] as const;
 
 function toDateTimeLocal(value: string) {
@@ -103,7 +194,7 @@ export function ConfigAdminClient({ initialConfig }: { initialConfig: ConfigMap 
     });
   }
 
-  function onBlur(event: FocusEvent<HTMLInputElement>) {
+  function onBlur(event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const key = event.currentTarget.name;
     const rawValue = event.currentTarget.value;
     const value = key === "unlock_date" ? fromDateTimeLocal(rawValue) : rawValue;
@@ -187,6 +278,14 @@ export function ConfigAdminClient({ initialConfig }: { initialConfig: ConfigMap 
                       : "Hidden"}
                 </span>
               </label>
+            ) : control.type === "textarea" ? (
+              <textarea
+                className="form-input min-h-32 resize-y font-mono text-xs leading-5"
+                name={control.key}
+                value={displayValues[control.key] ?? ""}
+                onChange={(event) => setValue(control.key, event.target.value)}
+                onBlur={onBlur}
+              />
             ) : (
               <input
                 className="form-input"

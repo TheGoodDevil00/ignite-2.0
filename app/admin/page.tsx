@@ -21,6 +21,7 @@ type CountCard = {
 };
 
 async function countRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
   table: "teams" | "matches" | "match_scores",
   options?: {
     status?: MatchStatus;
@@ -28,8 +29,6 @@ async function countRows(
     end?: string;
   }
 ) {
-  const supabase = await createClient();
-
   if (table === "teams") {
     const { count } = await supabase
       .from("teams")
@@ -63,6 +62,7 @@ async function countRows(
 }
 
 export default async function AdminDashboardPage() {
+  const supabase = await createClient();
   const now = new Date();
   const startOfDay = new Date(now);
   startOfDay.setHours(0, 0, 0, 0);
@@ -71,14 +71,14 @@ export default async function AdminDashboardPage() {
 
   const [totalTeams, totalMatches, totalScores, matchesToday, completedMatches] =
     await Promise.all([
-      countRows("teams"),
-      countRows("matches"),
-      countRows("match_scores"),
-      countRows("matches", {
+      countRows(supabase, "teams"),
+      countRows(supabase, "matches"),
+      countRows(supabase, "match_scores"),
+      countRows(supabase, "matches", {
         start: startOfDay.toISOString(),
         end: endOfDay.toISOString(),
       }),
-      countRows("matches", { status: "completed" }),
+      countRows(supabase, "matches", { status: "completed" }),
     ]);
 
   const cards: CountCard[] = [

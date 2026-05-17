@@ -1,56 +1,23 @@
 "use client";
 
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
+
 import { useEffect, useMemo, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { navLinks } from "@/lib/mockData";
-import { siteConfigDefaults } from "@/lib/siteConfig";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import mgocsmLogo from "@/mgocsm logo.png";
-import igniteLogo from "@/Ignite2.0 logo.svg";
+import {
+  cmsDefaults,
+  getCmsLinks,
+  type SiteConfig,
+} from "@/lib/siteConfig";
 
-export function Navbar() {
+export function Navbar({ config }: { config: SiteConfig }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [filloutLink, setFilloutLink] = useState(siteConfigDefaults.fillout_link);
-  const supabase = useMemo(
-    () => (isSupabaseConfigured ? createClient() : null),
-    []
+  const navLinks = useMemo(
+    () => getCmsLinks(config.nav_links, cmsDefaults.navLinks),
+    [config.nav_links]
   );
-
-  useEffect(() => {
-    if (!supabase) return;
-    const client = supabase;
-    let cancelled = false;
-
-    async function loadConfig() {
-      const { data } = await client
-        .from("site_config")
-        .select("value")
-        .eq("key", "fillout_link")
-        .maybeSingle();
-
-      if (!cancelled && data) {
-        setFilloutLink(data.value);
-      }
-    }
-
-    loadConfig();
-
-    const channel = client
-      .channel("public-navbar-config")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "site_config", filter: "key=eq.fillout_link" },
-        () => loadConfig()
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      client.removeChannel(channel);
-    };
-  }, [supabase]);
+  const filloutLink = config.fillout_link.trim();
 
   // Disable scroll when mobile menu is open
   useEffect(() => {
@@ -68,9 +35,9 @@ export function Navbar() {
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-subtle bg-nav backdrop-blur-xl">
         <nav className="section-container flex h-14 items-center justify-between gap-2 px-2 sm:px-6">
-          <a className="flex shrink-0 items-center gap-2 sm:gap-3" href="#home" aria-label="IGNITE 2.0 home">
-            <Image src={mgocsmLogo} alt="MGOCSM Logo" width={60} height={32} className="h-[24px] sm:h-[32px] w-auto object-contain" priority />
-            <Image src={igniteLogo} alt="IGNITE 2.0 shield" width={60} height={32} className="h-[24px] sm:h-[32px] w-auto object-contain" priority />
+          <a className="flex shrink-0 items-center gap-2 sm:gap-3" href="#home" aria-label={`${config.site_title} home`}>
+            <img src={config.mgocsm_logo_url} alt={`${config.organizer_name} logo`} className="h-[24px] w-auto object-contain sm:h-[32px]" />
+            <img src={config.ignite_logo_url} alt={`${config.site_title} logo`} className="h-[24px] w-auto object-contain sm:h-[32px]" />
           </a>
 
           {/* Desktop Navigation Links */}
@@ -85,7 +52,7 @@ export function Navbar() {
           <div className="flex shrink-0 items-center gap-2">
             {filloutLink ? (
               <a className="register-button px-3 py-1.5 text-[10px] sm:px-5 sm:py-2 sm:text-xs" href={filloutLink} target="_blank" rel="noopener noreferrer">
-                Register Now
+                {config.register_button_label}
               </a>
             ) : null}
             {/* Hamburger Button */}
@@ -134,7 +101,7 @@ export function Navbar() {
               className="flex flex-col gap-4 border-t border-subtle pt-6 mb-4"
             >
               <div className="text-center">
-                <span className="text-[10px] uppercase tracking-widest text-muted">MGOCSM Dehuroad</span>
+                <span className="text-[10px] uppercase tracking-widest text-muted">{config.organizer_name}</span>
               </div>
             </motion.div>
           </motion.div>

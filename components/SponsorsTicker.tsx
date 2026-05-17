@@ -1,8 +1,9 @@
 "use client";
 
-import { sponsors } from "@/lib/mockData";
+import { cmsDefaults, getCmsStringArray, type SiteConfig } from "@/lib/siteConfig";
 
-export function SponsorsTicker() {
+export function SponsorsTicker({ config }: { config: SiteConfig }) {
+  const sponsors = getCmsStringArray(config.sponsors, cmsDefaults.sponsors);
   // Double the list locally to ensure there are plenty of items covering wide displays
   const items = [...sponsors, ...sponsors];
 

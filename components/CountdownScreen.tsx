@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
+
 import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { useCountdown } from "@/lib/countdown";
-import { siteConfigDefaults } from "@/lib/siteConfig";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import mgocsmLogo from "@/mgocsm logo.png";
-import igniteLogo from "@/Ignite2.0 logo.svg";
+import { isEnabled, type SiteConfig } from "@/lib/siteConfig";
 
 type CountdownScreenProps = {
   unlockDate: string;
+  config: SiteConfig;
   onComplete: () => void;
   onUnlockNow: () => void;
 };
@@ -29,49 +27,15 @@ function format(value: number) {
 
 export function CountdownScreen({
   unlockDate,
+  config,
   onComplete,
   onUnlockNow,
 }: CountdownScreenProps) {
   const { timeLeft, tick } = useCountdown(unlockDate, onComplete);
-  const [filloutLink, setFilloutLink] = useState(siteConfigDefaults.fillout_link);
-  const supabase = useMemo(
-    () => (isSupabaseConfigured ? createClient() : null),
-    []
-  );
-
-  useEffect(() => {
-    if (!supabase) return;
-    const client = supabase;
-    let cancelled = false;
-
-    async function loadConfig() {
-      const { data } = await client
-        .from("site_config")
-        .select("value")
-        .eq("key", "fillout_link")
-        .maybeSingle();
-
-      if (!cancelled && data) {
-        setFilloutLink(data.value);
-      }
-    }
-
-    loadConfig();
-
-    const channel = client
-      .channel("public-countdown-config")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "site_config", filter: "key=eq.fillout_link" },
-        () => loadConfig()
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      client.removeChannel(channel);
-    };
-  }, [supabase]);
+  const filloutLink = config.fillout_link.trim();
+  const titleParts = config.countdown_title.split(/\s+/);
+  const accentPart = titleParts.pop() ?? "";
+  const titleLead = titleParts.join(" ");
 
   return (
     <main className="countdown-screen">
@@ -81,32 +45,26 @@ export function CountdownScreen({
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           className="countdown-logo flex items-center justify-center gap-4"
         >
-          <Image
-            src={mgocsmLogo}
-            alt="MGOCSM Logo"
-            width={120}
-            height={60}
+          <img
+            src={config.mgocsm_logo_url}
+            alt={`${config.organizer_name} logo`}
             className="h-[60px] w-auto object-contain"
-            priority
           />
           <div className="h-[32px] w-[1px] bg-white/20" />
-          <Image
-            src={igniteLogo}
-            alt="IGNITE 2.0 shield"
-            width={120}
-            height={60}
+          <img
+            src={config.ignite_logo_url}
+            alt={`${config.site_title} logo`}
             className="h-[60px] w-auto object-contain"
-            priority
           />
         </motion.div>
 
-        <p className="countdown-kicker" style={{ marginBottom: "0.5rem" }}>26TH JULY</p>
-        <p className="countdown-kicker">Something big is coming!!!</p>
+        <p className="countdown-kicker" style={{ marginBottom: "0.5rem" }}>{config.countdown_date_label}</p>
+        <p className="countdown-kicker">{config.countdown_kicker}</p>
         <h1 className="brand-heading countdown-title">
-          <span>IGNITE</span>
-          <span className="text-accent"> 2.0</span>
+          <span>{titleLead}</span>
+          <span className="text-accent"> {accentPart}</span>
         </h1>
-        <p className="countdown-label">Unlocks In</p>
+        <p className="countdown-label">{config.countdown_label}</p>
 
         <div className="countdown-grid" aria-label="Countdown timer">
           {units.map((unit, index) => (
@@ -138,18 +96,19 @@ export function CountdownScreen({
             rel="noopener noreferrer"
             style={{ marginBottom: "-1rem" }}
           >
-            REGISTER NOW
+            {config.register_button_label}
           </a>
         ) : null}
 
-        {/* TEMP: remove this manual unlock button before shipping to production. */}
-        <button
-          type="button"
-          className="primary-pill mt-8"
-          onClick={onUnlockNow}
-        >
-          Unlock Site Now
-        </button>
+        {isEnabled(config.countdown_manual_unlock_visible, true) ? (
+          <button
+            type="button"
+            className="primary-pill mt-8"
+            onClick={onUnlockNow}
+          >
+            {config.countdown_manual_unlock_label}
+          </button>
+        ) : null}
 
         <a
           className="primary-pill mt-3 inline-flex items-center gap-2"
@@ -157,7 +116,7 @@ export function CountdownScreen({
           aria-label="Open admin dashboard"
         >
           <ShieldCheck size={16} aria-hidden="true" />
-          Admin Dashboard
+          {config.countdown_admin_label}
         </a>
       </div>
     </main>

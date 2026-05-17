@@ -1,58 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+/* eslint-disable @next/next/no-img-element */
+
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { siteConfigDefaults } from "@/lib/siteConfig";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import Image from "next/image";
-import mgocsmLogo from "@/mgocsm logo.png";
-import igniteLogo from "@/Ignite2.0 logo.svg";
+import { cmsDefaults, getCmsLinks, type SiteConfig } from "@/lib/siteConfig";
 
-const defaultButtonLinks = [
-  { label: "View Fixtures", href: "#fixtures" },
-  { label: "Live Score", href: "#fixtures" },
-];
-
-export function HeroSection() {
-  const [filloutLink, setFilloutLink] = useState(siteConfigDefaults.fillout_link);
-  const supabase = useMemo(
-    () => (isSupabaseConfigured ? createClient() : null),
-    []
+export function HeroSection({ config }: { config: SiteConfig }) {
+  const buttonLinks = useMemo(
+    () => getCmsLinks(config.hero_buttons, cmsDefaults.heroButtons),
+    [config.hero_buttons]
   );
-
-  useEffect(() => {
-    if (!supabase) return;
-    const client = supabase;
-    let cancelled = false;
-
-    async function loadConfig() {
-      const { data } = await client
-        .from("site_config")
-        .select("value")
-        .eq("key", "fillout_link")
-        .maybeSingle();
-
-      if (!cancelled && data) {
-        setFilloutLink(data.value);
-      }
-    }
-
-    loadConfig();
-
-    const channel = client
-      .channel("public-hero-config")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "site_config", filter: "key=eq.fillout_link" },
-        () => loadConfig()
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      client.removeChannel(channel);
-    };
-  }, [supabase]);
+  const filloutLink = config.fillout_link.trim();
 
   return (
     <section id="home" className="section-container hero-section">
@@ -63,36 +22,30 @@ export function HeroSection() {
         className="mx-auto flex max-w-4xl flex-col items-center text-center"
       >
         <div className="mb-4 flex flex-col items-center justify-center gap-5 sm:mb-6 sm:gap-6">
-          <Image
-            src={mgocsmLogo}
-            alt="MGOCSM Logo"
-            width={200}
-            height={80}
+          <img
+            src={config.mgocsm_logo_url}
+            alt={`${config.organizer_name} logo`}
             className="h-auto w-[120px] object-contain sm:w-[160px] md:w-[200px]"
-            priority
           />
-          <Image
-            src={igniteLogo}
-            alt="IGNITE 2.0 shield"
-            width={400}
-            height={160}
+          <img
+            src={config.ignite_logo_url}
+            alt={`${config.site_title} logo`}
             className="h-auto w-[240px] object-contain sm:w-[320px] md:w-[400px]"
-            priority
           />
         </div>
         <p className="hero-tagline">
-          <span>PLAY. COMPETE. </span>
-          <span className="text-accent">WIN!!!</span>
+          <span>{config.hero_tagline} </span>
+          <span className="text-accent">{config.hero_tagline_accent}</span>
         </p>
-        <p className="hero-subtitle">The most awaited football event is back!</p>
+        <p className="hero-subtitle">{config.hero_subtitle}</p>
 
         <div className="mt-8 flex w-full max-w-[320px] flex-wrap justify-center gap-1.5 sm:max-w-xl sm:gap-4">
           {filloutLink ? (
             <a className="glass-button" href={filloutLink} target="_blank" rel="noopener noreferrer">
-              REGISTER NOW
+              {config.register_button_label}
             </a>
           ) : null}
-          {defaultButtonLinks.map((button) => (
+          {buttonLinks.map((button) => (
             <a className="glass-button" href={button.href} key={button.label}>
               {button.label}
             </a>

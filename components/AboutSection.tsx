@@ -1,32 +1,38 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import {
+  cmsDefaults,
+  getCmsStringArray,
+  parseCmsJson,
+  type CmsTestimonial,
+  type SiteConfig,
+} from "@/lib/siteConfig";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
-interface Testimonial {
-  name: string;
-  body: string;
-}
-
-interface AboutData {
-  imageFiles: string[];
-  aboutText: string;
-  testimonials: Testimonial[];
-}
+type Testimonial = CmsTestimonial;
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 function filenameToAlt(filename: string): string {
   return filename
+    .split("/")
+    .pop()!
     .replace(/\.[^.]+$/, "")
     .replace(/[-_]/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function imageSrc(value: string) {
+  if (value.startsWith("http") || value.startsWith("/")) return value;
+  return `/events/${value}`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -109,12 +115,10 @@ function EventCarousel({ images }: { images: string[] }) {
             aria-roledescription="slide"
             aria-label={`Slide ${i + 1} of ${total}`}
           >
-            <Image
-              src={`/events/${file}`}
+            <img
+              src={imageSrc(file)}
               alt={filenameToAlt(file)}
-              fill
-              sizes="(max-width: 768px) 100vw, 56vw"
-              className="object-cover object-top"
+              className="absolute inset-0 h-full w-full object-cover object-top"
               loading="lazy"
             />
           </div>
@@ -191,28 +195,13 @@ function TestimonialQuote({
 /* ------------------------------------------------------------------ */
 /*  Main AboutSection component                                        */
 /* ------------------------------------------------------------------ */
-export function AboutSection() {
-  const [data, setData] = useState<AboutData | null>(null);
-
-  useEffect(() => {
-    fetch("/api/about-data")
-      .then((r) => r.json())
-      .then((d: AboutData) => setData(d))
-      .catch(() => {});
-  }, []);
-
-  if (!data) {
-    return (
-      <section id="about" className="section-container pb-10 md:pb-16">
-        <div className="mx-auto max-w-2xl text-center">
-          <div className="mx-auto h-8 w-48 animate-pulse rounded bg-card" />
-          <div className="mx-auto mt-4 h-24 w-full max-w-md animate-pulse rounded bg-card" />
-        </div>
-      </section>
-    );
-  }
-
-  const { imageFiles, aboutText, testimonials } = data;
+export function AboutSection({ config }: { config: SiteConfig }) {
+  const imageFiles = getCmsStringArray(config.about_images, cmsDefaults.aboutImages);
+  const aboutText = config.about_text;
+  const testimonials = parseCmsJson<CmsTestimonial[]>(
+    config.about_testimonials,
+    cmsDefaults.testimonials
+  );
   const paragraphs = aboutText
     .split(/\n\s*\n/)
     .map((p) => p.trim())
@@ -238,10 +227,7 @@ export function AboutSection() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          <h2 className="about-heading">
-            About <span className="italic">Ignite</span>{" "}
-            <span className="text-accent">2.0</span>
-          </h2>
+          <h2 className="about-heading">{config.about_heading}</h2>
           <p className="about-lead">{leadParagraph}</p>
         </motion.div>
 
@@ -254,13 +240,10 @@ export function AboutSection() {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
           >
-            <Image
-              src={`/events/${heroImage}`}
+            <img
+              src={imageSrc(heroImage)}
               alt={filenameToAlt(heroImage)}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover object-top"
-              priority
+              className="absolute inset-0 h-full w-full object-cover object-top"
             />
             {/* overlay gradient for text readability */}
             <div className="about-hero-image-overlay" />
@@ -295,4 +278,3 @@ export function AboutSection() {
     </section>
   );
 }
-

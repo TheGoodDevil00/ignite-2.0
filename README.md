@@ -102,6 +102,21 @@ NEXT_PUBLIC_UNLOCK_DATE=2024-05-25T17:00:00Z
 npm run dev
 ```
 
+### 4. Admin and Scorer Accounts
+The login screen accepts the usernames `admin` and `scorer`, mapped to `admin@ignite.local` and `scorer@ignite.local`.
+
+Set passwords in `.env.local`, then provision/update the Supabase Auth users:
+```env
+ADMIN_PASSWORD=change-me
+SCORER_PASSWORD=change-me-too
+```
+
+```bash
+npm run auth:users
+```
+
+Scorer accounts are limited to the Fixtures and Scores tabs.
+
 ---
 
 ## 📂 Project Structure

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   Gauge,
@@ -14,13 +15,14 @@ import {
   Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import type { UserRole } from "@/lib/supabase/types";
 
 const links = [
-  { label: "Dashboard", href: "/admin", icon: Gauge },
-  { label: "Fixtures", href: "/admin/fixtures", icon: CalendarDays },
-  { label: "Scores", href: "/admin/scores", icon: ListChecks },
-  { label: "Teams & Players", href: "/admin/teams", icon: Users },
-  { label: "Site Config", href: "/admin/config", icon: Settings },
+  { label: "Dashboard", href: "/admin", icon: Gauge, roles: ["admin"] },
+  { label: "Fixtures", href: "/admin/fixtures", icon: CalendarDays, roles: ["admin", "scorer"] },
+  { label: "Scores", href: "/admin/scores", icon: ListChecks, roles: ["admin", "scorer"] },
+  { label: "Teams & Players", href: "/admin/teams", icon: Users, roles: ["admin"] },
+  { label: "Site Config", href: "/admin/config", icon: Settings, roles: ["admin"] },
 ];
 
 export default function AdminLayout({
@@ -31,6 +33,51 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const isLogin = pathname === "/admin/login";
+  const [role, setRole] = useState<UserRole | null>(null);
+  const [activeHref, setActiveHref] = useState<string | null>(null);
+  const visibleLinks = useMemo(
+    () => links.filter((link) => role && link.roles.includes(role)),
+    [role]
+  );
+
+  useEffect(() => {
+    setActiveHref(null);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (isLogin) return;
+
+    let cancelled = false;
+    const supabase = createClient();
+
+    async function loadRole() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || cancelled) return;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!cancelled) {
+        setRole(data?.role ?? null);
+      }
+    }
+
+    loadRole();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLogin]);
+
+  useEffect(() => {
+    visibleLinks.forEach((link) => router.prefetch(link.href));
+  }, [router, visibleLinks]);
 
   async function signOut() {
     const supabase = createClient();
@@ -58,14 +105,17 @@ export default function AdminLayout({
           </Link>
 
           <nav className="mt-8 grid gap-2">
-            {links.map((item) => {
+            {visibleLinks.map((item) => {
               const Icon = item.icon;
-              const active = pathname === item.href;
+              const activePath = activeHref ?? pathname;
+              const active = activePath === item.href;
 
               return (
                 <Link
                   href={item.href}
                   key={item.href}
+                  prefetch
+                  onClick={() => setActiveHref(item.href)}
                   className={`flex items-center gap-3 rounded-md border px-3 py-3 text-sm font-bold transition ${
                     active
                       ? "border-accent bg-accent text-white"
@@ -84,7 +134,11 @@ export default function AdminLayout({
               <Shield size={16} />
               Protected
             </div>
-            <p className="mt-2 text-sm text-white">Only admin profiles can access this area.</p>
+            <p className="mt-2 text-sm text-white">
+              {role === "scorer"
+                ? "Scorer access is limited to fixtures and scores."
+                : "Only admin and scorer profiles can access this area."}
+            </p>
             <button
               type="button"
               onClick={signOut}
@@ -108,12 +162,14 @@ export default function AdminLayout({
           </button>
         </div>
         <nav className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
-          {links.map((item) => (
+          {visibleLinks.map((item) => (
             <Link
               href={item.href}
               key={item.href}
+              prefetch
+              onClick={() => setActiveHref(item.href)}
               className={`shrink-0 rounded border px-3 py-2 text-[10px] font-bold uppercase ${
-                pathname === item.href
+                (activeHref ?? pathname) === item.href
                   ? "border-accent bg-accent text-white"
                   : "border-subtle bg-card text-muted"
               }`}
