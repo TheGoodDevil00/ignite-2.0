@@ -1,9 +1,9 @@
 "use client";
 
-import { Phone } from "lucide-react";
+import { Phone, ShieldCheck } from "lucide-react";
 import InstagramIcon from "./InstagramIcon";
 import Image from "next/image";
-import { navLinks, sponsors } from "@/lib/mockData";
+import { navLinks } from "@/lib/mockData";
 import mgocsmLogo from "@/mgocsm logo.png";
 import igniteLogo from "@/Ignite2.0 logo.svg";
 
@@ -11,37 +11,24 @@ export function Footer() {
   return (
     <footer id="contact" className="bg-section">
       <div className="section-container py-14">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="flex flex-col items-center justify-center sm:items-start">
-            <div className="flex items-center justify-center gap-4">
-              <Image
-                src={mgocsmLogo}
-                alt="MGOCSM Logo"
-                width={100}
-                height={32}
-                className="h-[32px] w-auto object-contain"
-              />
-              <Image
-                src={igniteLogo}
-                alt="IGNITE 2.0 shield"
-                width={100}
-                height={32}
-                className="h-[32px] w-auto object-contain"
-              />
-            </div>
-            <p className="mt-4 text-center text-sm text-muted sm:text-left">Join our community</p>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="flex items-center justify-center gap-4">
+            <Image
+              src={mgocsmLogo}
+              alt="MGOCSM Logo"
+              width={100}
+              height={32}
+              className="h-[32px] w-auto object-contain"
+            />
+            <Image
+              src={igniteLogo}
+              alt="IGNITE 2.0 shield"
+              width={100}
+              height={32}
+              className="h-[32px] w-auto object-contain"
+            />
           </div>
-
-          <div>
-            <p className="footer-title">Our Sponsors</p>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {sponsors.map((sponsor) => (
-                <div className="sponsor-tile" key={sponsor}>
-                  {sponsor}
-                </div>
-              ))}
-            </div>
-          </div>
+          <p className="mt-4 text-sm text-muted">Join our community</p>
         </div>
 
         <div className="mt-12 grid gap-8 border-t border-subtle pt-8 md:grid-cols-[2fr_1fr_1fr]">
@@ -116,11 +103,19 @@ export function Footer() {
                   {link.label}
                 </a>
               ))}
+              <a
+                className="footer-link flex items-center gap-1 font-semibold text-accent hover:text-accent/80 transition-colors"
+                href="/admin"
+                aria-label="Open admin dashboard"
+              >
+                <ShieldCheck size={14} className="shrink-0" />
+                <span>Admin</span>
+              </a>
             </div>
           </div>
 
           <div>
-            <p className="footer-title">Social</p>
+            <p className="footer-title">Social Media</p>
             <div className="mt-4 flex gap-3">
               <a className="social-button" href="https://www.instagram.com/mgocsm_dehuroad/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <InstagramIcon size={18} />
