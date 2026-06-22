@@ -13,15 +13,42 @@ export function HeroSection({ config }: { config: SiteConfig }) {
   );
   const filloutLink = config.fillout_link.trim();
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+      },
+    },
+  };
+
   return (
     <section id="home" className="section-container hero-section">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
         className="mx-auto flex max-w-4xl flex-col items-center text-center"
       >
-        <div className="mb-4 flex flex-col items-center justify-center gap-5 sm:mb-6 sm:gap-6">
+        <motion.div
+          variants={itemVariants}
+          className="mb-4 flex flex-col items-center justify-center gap-5 sm:mb-6 sm:gap-6"
+        >
           <img
             src={config.mgocsm_logo_url}
             alt={`${config.organizer_name} logo`}
@@ -32,25 +59,30 @@ export function HeroSection({ config }: { config: SiteConfig }) {
             alt={`${config.site_title} logo`}
             className="h-auto w-[240px] object-contain sm:w-[320px] md:w-[400px]"
           />
-        </div>
-        <p className="hero-tagline">
+        </motion.div>
+        <motion.p variants={itemVariants} className="hero-tagline text-balance">
           <span>{config.hero_tagline} </span>
           <span className="text-accent">{config.hero_tagline_accent}</span>
-        </p>
-        <p className="hero-subtitle">{config.hero_subtitle}</p>
+        </motion.p>
+        <motion.p variants={itemVariants} className="hero-subtitle text-balance">
+          {config.hero_subtitle}
+        </motion.p>
 
-        <div className="mt-8 flex w-full max-w-[320px] flex-wrap justify-center gap-1.5 sm:max-w-xl sm:gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="mt-8 flex w-full max-w-[320px] flex-wrap justify-center gap-1.5 sm:max-w-xl sm:gap-4"
+        >
           {filloutLink ? (
-            <a className="glass-button" href={filloutLink} target="_blank" rel="noopener noreferrer">
+            <a className="glass-button active-scale touch-target-40" href={filloutLink} target="_blank" rel="noopener noreferrer">
               {config.register_button_label}
             </a>
           ) : null}
           {buttonLinks.map((button) => (
-            <a className="glass-button" href={button.href} key={button.label}>
+            <a className="glass-button active-scale touch-target-40" href={button.href} key={button.label}>
               {button.label}
             </a>
           ))}
-        </div>
+        </motion.div>
       </motion.div>
     </section>
   );

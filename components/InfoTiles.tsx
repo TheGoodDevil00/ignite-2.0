@@ -1,7 +1,28 @@
 "use client";
 
 import { Calendar, MapPin, Trophy } from "lucide-react";
+import { motion } from "framer-motion";
 import type { SiteConfig } from "@/lib/siteConfig";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 100, damping: 15 },
+  },
+};
 
 export function InfoTiles({ config }: { config: SiteConfig }) {
   const tiles = [
@@ -25,35 +46,46 @@ export function InfoTiles({ config }: { config: SiteConfig }) {
 
   return (
     <section className="section-container pb-8 md:pb-12" aria-label="Tournament details">
-      <div className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2 sm:gap-4">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+        className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2 sm:gap-4"
+      >
         {tiles.map((tile) => {
           const Icon = tile.icon;
           
           if (tile.href) {
             return (
-              <a
+              <motion.a
+                variants={itemVariants}
                 href={tile.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="info-tile transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="info-tile active-scale transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 key={tile.label}
               >
                 <Icon size={44} className="mb-2 text-white" strokeWidth={1.5} />
                 <p className="info-tile-label">{tile.label}</p>
                 <p className="info-tile-value">{tile.value}</p>
-              </a>
+              </motion.a>
             );
           }
 
           return (
-            <article className="info-tile" key={tile.label}>
+            <motion.article
+              variants={itemVariants}
+              className="info-tile"
+              key={tile.label}
+            >
               <Icon size={44} className="mb-2 text-white" strokeWidth={1.5} />
               <p className="info-tile-label">{tile.label}</p>
               <p className="info-tile-value">{tile.value}</p>
-            </article>
+            </motion.article>
           );
         })}
-      </div>
+      </motion.div>
     </section>
   );
 }
