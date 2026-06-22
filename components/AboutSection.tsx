@@ -121,20 +121,22 @@ function EventCarousel({ images }: { images: string[] }) {
               className="absolute inset-0 h-full w-full object-cover object-top"
               loading="lazy"
             />
+            {/* subtle image outline wrapper */}
+            <div className="absolute inset-0 border border-white/10 pointer-events-none rounded-2xl" />
           </div>
         ))}
       </div>
 
       {/* arrows */}
       <button
-        className="about-carousel-arrow about-carousel-arrow--left"
+        className="about-carousel-arrow about-carousel-arrow--left active-scale"
         onClick={() => goTo(active - 1)}
         aria-label="Previous slide"
       >
         <ChevronLeft size={20} aria-hidden="true" />
       </button>
       <button
-        className="about-carousel-arrow about-carousel-arrow--right"
+        className="about-carousel-arrow about-carousel-arrow--right active-scale"
         onClick={() => goTo(active + 1)}
         aria-label="Next slide"
       >
@@ -247,6 +249,8 @@ export function AboutSection({ config }: { config: SiteConfig }) {
             />
             {/* overlay gradient for text readability */}
             <div className="about-hero-image-overlay" />
+            {/* subtle image outline wrapper */}
+            <div className="absolute inset-0 border border-white/10 pointer-events-none rounded-2xl" />
           </motion.div>
         )}
       </div>

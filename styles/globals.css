@@ -476,7 +476,7 @@ a {
   }
 
   .about-carousel-arrow {
-    @apply absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-subtle bg-card p-2 text-text shadow-glass backdrop-blur-md transition;
+    @apply absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-subtle bg-card w-10 h-10 flex items-center justify-center p-0 text-text shadow-glass backdrop-blur-md transition;
   }
 
   .about-carousel-arrow:hover,
@@ -497,7 +497,7 @@ a {
   }
 
   .about-carousel-dot {
-    @apply h-2 w-2 rounded-full border border-subtle bg-card transition;
+    @apply h-2 w-2 rounded-full border border-subtle bg-card transition touch-target-40;
   }
 
   .about-carousel-dot--active {
