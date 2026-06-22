@@ -195,15 +195,15 @@ export function LeaderboardSection({ visible }: { visible?: boolean }) {
                   const rank = index + 1;
                   return (
                     <tr className="border-t border-subtle bg-card even:bg-white/[0.02] transition-colors hover:bg-white/[0.05]" key={row.id}>
-                      <td className={`sticky left-0 px-4 py-3 font-bold z-10 w-[64px] min-w-[64px] bg-inherit ${rank === 1 ? 'text-accent' : 'text-text'}`}>#{rank}</td>
+                      <td className={`sticky left-0 px-4 py-3 font-bold z-10 w-[64px] min-w-[64px] bg-inherit tabular-nums ${rank === 1 ? 'text-accent' : 'text-text'}`}>#{rank}</td>
                       <td className="sticky left-[64px] px-4 py-3 font-semibold text-white z-10 min-w-[160px] bg-inherit shadow-[1px_0_0_0_rgba(255,255,255,0.05)] whitespace-nowrap">{row.name}</td>
-                      <td className="px-4 py-3 text-center font-black text-white bg-inherit">{row.points}</td>
-                      <td className="px-4 py-3 text-center text-muted bg-inherit">{row.played}</td>
-                      <td className="px-4 py-3 text-center text-muted bg-inherit">{row.won}</td>
-                      <td className="px-4 py-3 text-center text-muted bg-inherit">{row.drawn}</td>
-                      <td className="px-4 py-3 text-center text-muted bg-inherit">{row.lost}</td>
-                      <td className="px-4 py-3 text-center text-muted bg-inherit">{row.goalsFor}</td>
-                      <td className="px-4 py-3 text-center text-muted bg-inherit">{row.goalsAgainst}</td>
+                      <td className="px-4 py-3 text-center font-black text-white bg-inherit tabular-nums">{row.points}</td>
+                      <td className="px-4 py-3 text-center text-muted bg-inherit tabular-nums">{row.played}</td>
+                      <td className="px-4 py-3 text-center text-muted bg-inherit tabular-nums">{row.won}</td>
+                      <td className="px-4 py-3 text-center text-muted bg-inherit tabular-nums">{row.drawn}</td>
+                      <td className="px-4 py-3 text-center text-muted bg-inherit tabular-nums">{row.lost}</td>
+                      <td className="px-4 py-3 text-center text-muted bg-inherit tabular-nums">{row.goalsFor}</td>
+                      <td className="px-4 py-3 text-center text-muted bg-inherit tabular-nums">{row.goalsAgainst}</td>
                     </tr>
                   );
                 })}

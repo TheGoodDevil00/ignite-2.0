@@ -111,7 +111,7 @@ function DashboardMatch({ fixture }: { fixture: Fixture }) {
     <article className="rounded-lg border border-subtle bg-card p-4 shadow-glass backdrop-blur">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase text-accent">
+          <p className="text-[10px] font-black uppercase text-accent tabular-nums">
             Match {fixture.matchNumber}
           </p>
           <p className="mt-1 truncate text-xs font-bold uppercase text-muted">
@@ -135,7 +135,7 @@ function DashboardMatch({ fixture }: { fixture: Fixture }) {
         <p className="truncate text-right text-xs font-black text-white sm:text-sm">
           {fixture.teamA}
         </p>
-        <p className={`font-display text-3xl italic leading-none ${isLive ? "text-accent" : "text-white"}`}>
+        <p className={`font-display text-3xl italic leading-none tabular-nums ${isLive ? "text-accent" : "text-white"}`}>
           {isLive || isCompleted ? fixture.score : "VS"}
         </p>
         <p className="truncate text-left text-xs font-black text-white sm:text-sm">
@@ -144,7 +144,7 @@ function DashboardMatch({ fixture }: { fixture: Fixture }) {
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-3 text-xs font-semibold uppercase text-muted">
-        <span>{fixture.time}</span>
+        <span className="tabular-nums">{fixture.time}</span>
         {fixture.winnerName ? (
           <span className="inline-flex items-center gap-1 text-emerald-200">
             <CheckCircle2 size={13} />
@@ -348,7 +348,7 @@ export function FixturesSection() {
           {filterOptions.map((option) => (
             <button
               onClick={() => setFilter(option.value)}
-              className={`rounded-sm border border-subtle px-6 py-2 text-xs font-bold uppercase transition-colors ${
+              className={`rounded-sm border border-subtle px-6 py-2 text-xs font-bold uppercase transition-all active-scale ${
                 filter === option.value
                   ? "border-accent bg-accent text-white"
                   : "bg-card text-muted hover:text-white"
@@ -384,10 +384,10 @@ export function FixturesSection() {
                   className="flex flex-col items-center gap-4 rounded-lg border border-subtle bg-card p-4 transition-colors hover:border-muted/30 sm:flex-row shadow-glass backdrop-blur"
                 >
                   <div className="w-full shrink-0 text-center sm:w-48 sm:text-left">
-                    <p className="text-sm font-bold uppercase text-white">
+                    <p className="text-sm font-bold uppercase text-white tabular-nums">
                       Match {fixture.matchNumber < 10 ? `0${fixture.matchNumber}` : fixture.matchNumber}
                     </p>
-                    <p className="mt-1 text-xs font-semibold uppercase text-muted">{fixture.time}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase text-muted tabular-nums">{fixture.time}</p>
                     <p className="mt-1 text-[10px] font-black uppercase text-muted">
                       {statusLabels[fixture.status]}
                     </p>
@@ -403,9 +403,9 @@ export function FixturesSection() {
 
                     <div className="flex w-16 shrink-0 items-center justify-center">
                       {fixture.status === "live" ? (
-                        <span className="text-lg font-black text-accent">{fixture.score}</span>
+                        <span className="text-lg font-black text-accent tabular-nums">{fixture.score}</span>
                       ) : fixture.status === "completed" ? (
-                        <span className="text-lg font-black text-white">{fixture.score}</span>
+                        <span className="text-lg font-black text-white tabular-nums">{fixture.score}</span>
                       ) : fixture.status === "cancelled" ? (
                         <span className="text-xs font-black uppercase text-muted">Off</span>
                       ) : (
@@ -432,7 +432,7 @@ export function FixturesSection() {
             <div className="mt-8 text-center">
               <button
                 type="button"
-                className="rounded border border-subtle bg-field px-6 py-2 text-xs font-bold uppercase text-muted transition-colors hover:text-white"
+                className="rounded border border-subtle bg-field px-6 py-2 text-xs font-bold uppercase text-muted transition-all hover:text-white active-scale"
               >
                 View Full Fixtures
               </button>
