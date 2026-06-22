@@ -35,7 +35,7 @@ export function Navbar({ config }: { config: SiteConfig }) {
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-subtle bg-nav backdrop-blur-xl">
         <nav className="section-container flex h-14 items-center justify-between gap-2 px-2 sm:px-6">
-          <a className="flex shrink-0 items-center gap-2 sm:gap-3" href="#home" aria-label={`${config.site_title} home`}>
+          <a className="flex shrink-0 items-center gap-2 sm:gap-3 active-scale" href="#home" aria-label={`${config.site_title} home`}>
             <img src={config.mgocsm_logo_url} alt={`${config.organizer_name} logo`} className="h-[24px] w-auto object-contain sm:h-[32px]" />
             <img src={config.ignite_logo_url} alt={`${config.site_title} logo`} className="h-[24px] w-auto object-contain sm:h-[32px]" />
           </a>
@@ -43,7 +43,7 @@ export function Navbar({ config }: { config: SiteConfig }) {
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex flex-1 items-center justify-center gap-6 px-1">
             {navLinks.map((link) => (
-              <a className="nav-link whitespace-nowrap text-[11px]" href={link.href} key={`${link.label}-${link.href}`}>
+              <a className="nav-link whitespace-nowrap text-[11px] active-scale" href={link.href} key={`${link.label}-${link.href}`}>
                 {link.label}
               </a>
             ))}
@@ -51,17 +51,17 @@ export function Navbar({ config }: { config: SiteConfig }) {
 
           <div className="flex shrink-0 items-center gap-2">
             {filloutLink ? (
-              <a className="register-button px-3 py-1.5 text-[10px] sm:px-5 sm:py-2 sm:text-xs" href={filloutLink} target="_blank" rel="noopener noreferrer">
+              <a className="register-button px-3 py-1.5 text-[10px] sm:px-5 sm:py-2 sm:text-xs active-scale" href={filloutLink} target="_blank" rel="noopener noreferrer">
                 {config.register_button_label}
               </a>
             ) : null}
             {/* Hamburger Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-subtle bg-card text-text transition hover:border-accent hover:text-accent md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-subtle bg-card text-text transition hover:border-accent hover:text-accent md:hidden active-scale"
               aria-label={isOpen ? "Close menu" : "Open menu"}
             >
-              {isOpen ? <X size={16} /> : <Menu size={16} />}
+              {isOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </nav>
@@ -87,7 +87,7 @@ export function Navbar({ config }: { config: SiteConfig }) {
                   key={link.label}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="border-b border-subtle/50 pb-3 text-lg font-semibold uppercase tracking-wider text-text transition hover:text-accent"
+                  className="border-b border-subtle/50 pb-3 text-lg font-semibold uppercase tracking-wider text-text transition hover:text-accent active-scale"
                 >
                   {link.label}
                 </motion.a>

@@ -57,7 +57,7 @@ export function Footer({ config }: { config: SiteConfig }) {
                   </span>
                   <a
                     href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}
-                    className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors"
+                    className="flex items-center gap-2 mt-1.5 hover:text-text transition-colors active-scale w-fit"
                   >
                     <Phone size={14} className="text-accent" />
                     <span>{contact.name}: {contact.phone}</span>
@@ -71,12 +71,12 @@ export function Footer({ config }: { config: SiteConfig }) {
             <p className="footer-title">Explore</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {navLinks.map((link) => (
-                <a className="footer-link" href={link.href} key={`${link.label}-${link.href}`}>
+                <a className="footer-link active-scale" href={link.href} key={`${link.label}-${link.href}`}>
                   {link.label}
                 </a>
               ))}
               <a
-                className="footer-link flex items-center gap-1 font-semibold text-accent hover:text-accent/80 transition-colors"
+                className="footer-link flex items-center gap-1 font-semibold text-accent hover:text-accent/80 transition-colors active-scale w-fit"
                 href="/admin"
                 aria-label="Open admin dashboard"
               >
@@ -90,7 +90,7 @@ export function Footer({ config }: { config: SiteConfig }) {
             <p className="footer-title">Social Media</p>
             <div className="mt-4 flex gap-3">
               {socialLinks.map((link) => (
-                <a className="social-button" href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label} key={`${link.label}-${link.href}`}>
+                <a className="social-button active-scale" href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label} key={`${link.label}-${link.href}`}>
                   {link.label.toLowerCase().includes("instagram") ? (
                     <InstagramIcon size={18} />
                   ) : (
