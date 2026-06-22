@@ -60,7 +60,7 @@ export function CountdownScreen({
 
         <p className="countdown-kicker" style={{ marginBottom: "0.5rem" }}>{config.countdown_date_label}</p>
         <p className="countdown-kicker">{config.countdown_kicker}</p>
-        <h1 className="brand-heading countdown-title">
+        <h1 className="brand-heading countdown-title text-balance">
           <span>{titleLead}</span>
           <span className="text-accent"> {accentPart}</span>
         </h1>
@@ -74,7 +74,7 @@ export function CountdownScreen({
                 initial={{ scale: 0.92 }}
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
-                className="countdown-number"
+                className="countdown-number tabular-nums"
               >
                 {format(timeLeft[unit.key])}
               </motion.span>
@@ -90,7 +90,7 @@ export function CountdownScreen({
 
         {filloutLink ? (
           <a
-            className="primary-pill mt-8 inline-flex items-center gap-2"
+            className="primary-pill mt-8 inline-flex items-center gap-2 active-scale"
             href={filloutLink}
             target="_blank"
             rel="noopener noreferrer"
@@ -103,7 +103,7 @@ export function CountdownScreen({
         {isEnabled(config.countdown_manual_unlock_visible, true) ? (
           <button
             type="button"
-            className="primary-pill mt-8"
+            className="primary-pill mt-8 active-scale"
             onClick={onUnlockNow}
           >
             {config.countdown_manual_unlock_label}
@@ -111,7 +111,7 @@ export function CountdownScreen({
         ) : null}
 
         <a
-          className="primary-pill mt-3 inline-flex items-center gap-2"
+          className="primary-pill mt-3 inline-flex items-center gap-2 active-scale"
           href="/admin"
           aria-label="Open admin dashboard"
         >
